@@ -1,4 +1,4 @@
 # seismos-NFP-stability-prediction
-####_Final Project for Machine Learning for Public Policy_
 ####_Paul Mack, Sam Sun, Alden Golab_
-A prediction system for anticipating not-for-profit service provider fiscal stability year-over-year.
+A prediction system for anticipating not-for-profit service provider fiscal stability year-over-year. 
+Final project for Machine Learning in Public Policy, Spring 2016.
