@@ -30,3 +30,21 @@ df12_13 = pd.merge(df2012, df2013,  how = 'outer', on = 'EIN')
 dfmerge = pd.merge(df12_13, df2014, how = 'outer', on = 'EIN')
 print(len(dfmerge))
 dfmerge.to_csv("merged_data.csv")
+
+#https://www.irs.gov/Charities-&-Non-Profits/Exempt-Organizations-Business-Master-File-Extract-EO-BMF
+df1=pd.read_csv('eo1.csv')
+df2=pd.read_csv('eo2.csv')
+df3=pd.read_csv('eo3.csv')
+df4=pd.read_csv('eo4.csv')
+#download the zipmsa.csv from github
+dfz=pd.read_csv('zipmsa.csv')
+
+df5=df1.append(df2, ignore_index=True).append(df3, ignore_index=True).append(df4, ignore_index=True)
+df5['ZIP']=pd.DataFrame(list(df5['ZIP'].str.split('-')))
+dfz['ZIP CODE']=pd.Series(dfz['ZIP CODE']).astype(str).str.zfill(5)
+df=df5.merge(dfz, how='left', left_on=['ZIP','STATE'],right_on=['ZIP CODE','STATE'])
+df.to_csv('BMFData.csv')
+
+dfm=pd.read_csv('merged_data.csv')
+dff=dfm.merge(df[['NAME','EIN','ZIP','MSA1','NTEE_CD']],left_on=df2['EIN'],right_on=df['EIN'],how='left')
+dff.to_csv('990.csv',index=False)
