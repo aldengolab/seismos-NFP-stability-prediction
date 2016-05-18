@@ -7,7 +7,6 @@ import acg_process
 import numpy as np
 import pandas as pd
 
-LABEL_THRESHOLD = -20
 
 def read_file(filename):
     '''
@@ -27,14 +26,14 @@ def generate_features(data, year1, year2, year3=None, test_year=None):
       variablename is the column label from the IRS.
     '''
     features = pd.DataFrame(index = data.index)
-    features = generate_label(data, features, year1, year2, test_year)
+    features = generate_label(data, features, year1, year2)
     pass
 
-def generate_rev_fall(data, features, year1, year2):
+def generate_rev_fall(data, features, year1, year2, threshold = -20):
     '''
     Generates 0/1 variable for YOY Gross Revenue negative change from year1
-    to year2 and year_2 to test year. Uses LABEL_THRESHOLD to determine what
-    negative change to mark as 1 (e.g. if LABEL_THRESHOLD is -20, will give
+    to year2 and year_2 to test year. Uses threshold to determine what
+    negative change to mark as 1 (e.g. if threshold is -20, will give
     values less than -20 a 1).
     '''
     base_year = str(year1)
@@ -51,6 +50,8 @@ def generate_rev_fall(data, features, year1, year2):
     LABEL_THRESHOLD
 
     return features.join(calc[second_year + '_YOY_revenue_fell'])
+
+def generate_YOY_rev_change(data, features, year1, year2):
 
 def generate_missing_for_year():
     '''
