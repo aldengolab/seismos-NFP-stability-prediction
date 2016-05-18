@@ -46,5 +46,5 @@ df=df5.merge(dfz, how='left', left_on=['ZIP','STATE'],right_on=['ZIP CODE','STAT
 df.to_csv('BMFData.csv')
 
 dfm=pd.read_csv('merged_data.csv')
-dff=dfm.merge(df[['NAME','EIN','ZIP','MSA1','NTEE_CD']],left_on=df2['EIN'],right_on=df['EIN'],how='left')
+dff=dfm.merge(df[['NAME','EIN','ZIP','MSA1','NTEE_CD']],left_on=dfm['EIN'],right_on=df['EIN'],how='left')
 dff.to_csv('990.csv',index=False)
