@@ -2,10 +2,18 @@
 # Creates all features for seismos model
 # 5-17-16
 
-from acg_read import *
-from acg_process import *
+import acg_read
+import acg_process
+import numpy as np
+import pandas as pd
 
-LABEL_THRESHOLD = .2
+LABEL_THRESHOLD = -20
+
+def read_file(filename):
+    '''
+    Reads csv file.
+    '''
+    return acg_read.load_file(filename, index = 'EIN')
 
 def generate_features(data, year1, year2, year3=None, test_year=None):
     '''
@@ -19,24 +27,30 @@ def generate_features(data, year1, year2, year3=None, test_year=None):
       variablename is the column label from the IRS.
     '''
     features = pd.DataFrame(index = data.index)
+    features = generate_label(data, features, year1, year2, test_year)
     pass
 
-def generate_label(data, features, year1, year2, test_year):
+def generate_rev_fall(data, features, year1, year2):
     '''
     Generates 0/1 variable for YOY Gross Revenue negative change from year1
-    to year2 greater than LABEL_THRESHOLD.
+    to year2 and year_2 to test year. Uses LABEL_THRESHOLD to determine what
+    negative change to mark as 1 (e.g. if LABEL_THRESHOLD is -20, will give
+    values less than -20 a 1).
     '''
     base_year = str(year1)
+    base_variable = base_year + '_totrevenue'
     second_year = str(year2)
+    second_variable = second_year + '_totrevenue'
 
-    base = numpy.array(data[base_year + 'totrevenue'])
-    second = numpy.array(data[second_year + 'totrevenue'])
-    change = (second - base) / base
-    change_index = (change / np.average(change)) * 100
+    base = pd.DataFrame(data[base_variable])
+    second = pd.DataFrame(data[second_variable])
+    calc = base.dropna().join(second.dropna(), how = 'inner')
+    calc['change'] = calc[second_variable] - calc[base_variable]
+    calc['change_index'] = (calc['change'] / calc['change'].mean()) * 100
+    calc[second_year + '_YOY_revenue_fell'] = calc['change_index'] < \
+    LABEL_THRESHOLD
 
-    YOY_revenue_fell = change_index < -20
-    YOY_revenue_fell = pd.DataFrame(YOY_revenue_fell)
-    pd.concat([features, YOY_revenue_fell])
+    return features.join(calc[second_year + '_YOY_revenue_fell'])
 
 def generate_missing_for_year():
     '''

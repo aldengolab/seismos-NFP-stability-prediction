@@ -1,23 +1,21 @@
 # CAPP 30254: Machine Learning for Public Policy
 # ALDEN GOLAB
 # ML Pipeline
-# 
+#
 # Data processing functions.
 
-import pandas as pd 
-import numpy as np 
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+import pandas as pd
+import numpy as np
 import copy
 import sklearn.cross_validation
 import sklearn.preprocessing
 
-def impute(data, column, method = 'mean', classification = None, 
+def impute(data, column, method = 'mean', classification = None,
     distribution = None, write = False, keep = False):
     '''
     Runs imputation for data, given a particular method and column. Default
     will run mean imputation. If distribution is not selected, will run
-    probabilistic with normal distribution. Requires classification for 
+    probabilistic with normal distribution. Requires classification for
     conditional mean imputation. Writes imputed dataframe to csv.
 
     Returns: dataframe with imputed values
@@ -26,14 +24,14 @@ def impute(data, column, method = 'mean', classification = None,
     if method == 'mean':
         data, mean = impute_mean(data, column)
     elif method == 'conditional':
-        if classification == None: 
+        if classification == None:
             raise ValueError('Classification needed for conditional imputation.')
         else:
             data = impute_cond(data, column, classification)
     elif method == 'probabilistic':
         if distribution == None:
             data = impute_prob(data, column, dist = 'normal')
-        else: 
+        else:
             data = impute_prob(data, column, dist = distribution)
 
     if write == True:
@@ -42,7 +40,7 @@ def impute(data, column, method = 'mean', classification = None,
         print('Wrote data with imputation to {}'.format(new_file))
     if keep and method == 'mean':
         return (data, mean)
-    return data 
+    return data
 
 def impute_mean(data, column):
     '''
@@ -64,10 +62,10 @@ def impute_cond(data, column, classification):
     Generalized conditional mean imputation.
 
     Inputs: pandas dataframe, column to impute into, classification to impute on
-    Returns: 
+    Returns:
     '''
     dataframe = copy.deepcopy(data)
-    
+
     for row in dataframe[dataframe[column].isnull()].iterrows():
         dataframe.loc[row[0], column] = dataframe[column][dataframe[classification]\
          == row[1][classification]].mean()
@@ -84,14 +82,14 @@ def impute_prob(data, column, dist = 'normal'):
 
     if dist == 'Normal':
         for row in dataframe[dataframe[column].isnull()].iterrows():
-            dataframe.loc[row[0], column] = np.random.normal(dataframe[column].mean(), 
+            dataframe.loc[row[0], column] = np.random.normal(dataframe[column].mean(),
                 dataframe[column].std())
 
     return dataframe
 
 def impute_specific(data, column, value):
     '''
-    Takes a specific value to impute. 
+    Takes a specific value to impute.
     '''
     dataframe = copy.deepcopy(data)
 
@@ -120,17 +118,17 @@ def robust_transform(dataframe, column, keep = False, scaler = None):
         return (dataframe, scaler_set)
     return dataframe
 
-def discretize(data, column, bins = 5, bin_size = None, labels = None, max_val = None, 
+def discretize(data, column, bins = 5, bin_size = None, labels = None, max_val = None,
     min_val = None):
     '''
-    Makes continuous column values discrete in a new column. Accepts a total 
-    number of bins to separate values into or a bin size. If given both, will 
-    prioritize bin size over total number of bins. Performs outer join with 
-    existing dataset. If no labels are given, default values are integers. Will 
+    Makes continuous column values discrete in a new column. Accepts a total
+    number of bins to separate values into or a bin size. If given both, will
+    prioritize bin size over total number of bins. Performs outer join with
+    existing dataset. If no labels are given, default values are integers. Will
     use range of current data. Ranges will include right-most value and exclude
     left-most value.
 
-    Optional: use max_val and min_val to specify a range of values for which 
+    Optional: use max_val and min_val to specify a range of values for which
     the bin_size to bin over; will then apply to the data. min_val will not
     be included in the range: (min_val, next_val]. If zero is selected, min value
     will be set to -.0001 so that 0 values are included.
@@ -139,12 +137,12 @@ def discretize(data, column, bins = 5, bin_size = None, labels = None, max_val =
     '''
     assert data[column].dtype != object
 
-    if bin_size != None: 
+    if bin_size != None:
         max_val = max(data[column].values)
         min_val = min(data[column].values)
         if max_val == None or min_val == None:
             bins = int((max_val - min_val) / bin_size)
-        else:  
+        else:
             if min_val == 0:
                 bins = [-.0001]
             else:
@@ -175,7 +173,7 @@ def dichotomize(data, column):
     '''
     concat = []
     for value in data[column].values:
-        # Add ones to attributes that match 
+        # Add ones to attributes that match
         set_1 = data[data[column] == value]
         add = pd.DataFrame({value: [1] * len(set_1)})
         add.index = set_1.index
@@ -192,14 +190,14 @@ def dichotomize(data, column):
 
     # Put everything together
     dataframe = concat[0]
-    for df in concat[1:]: 
+    for df in concat[1:]:
         dataframe = dataframe.merge(df)
 
     return dataframe
 
 def log_scale(dataframe, col):
     '''
-    Converts given column into a log scale, then appends to the end of the 
+    Converts given column into a log scale, then appends to the end of the
     dataframe.
 
     Returns new dataframe with column added.
@@ -207,7 +205,7 @@ def log_scale(dataframe, col):
     if len(dataframe[dataframe[col] == 0]) == 0:
         data = np.log(dataframe[col])
         data.name = 'log_' + str(col)
-    else: 
+    else:
         raise ValueError
     return pd.concat([dataframe, data], axis = 1)
 
@@ -237,19 +235,19 @@ def normalize_scale(dataframe, col, negative = False, keep = False, maxval = Non
     data.columns = [col]
     dataframe = dataframe.drop(col, axis=1)
     dataframe = pd.concat([dataframe, data], axis=1)
-    if keep: 
+    if keep:
         return(dataframe, maxval, minval)
     else:
         return dataframe
 
 def test_train_split(dataframe, y_variable, test_size = .1):
     '''
-    Randomly selects a portion of the dataset for training and testing. 
+    Randomly selects a portion of the dataset for training and testing.
     Default is a 90/10 split; can be adjusted using propotion.
 
-    Returns test X, train X, test Y, train Y. 
+    Returns test X, train X, test Y, train Y.
     '''
-    split = sklearn.cross_validation.train_test_split(dataframe, 
+    split = sklearn.cross_validation.train_test_split(dataframe,
         test_size = test_size)
     test = copy.deepcopy(split[0])
     train = copy.deepcopy(split[1])
@@ -262,7 +260,7 @@ def test_train_split(dataframe, y_variable, test_size = .1):
 
 def replace_value_with_nan(data, column, value):
     '''
-    Replaces a value with NaN. 
+    Replaces a value with NaN.
     '''
     dataframe = copy.deepcopy(data)
 
