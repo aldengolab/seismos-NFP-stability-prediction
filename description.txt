@@ -1,0 +1,92 @@
+Description of the Data:
+
+We have gathered data from the IRS on Non-Profits Tax Information for Calendar Years  2012, 2013, 2014, and 2015. The downloaded data represents
+the 990 forms which the Non-Profits have filed to claim their tax exemptions. Non-Profits which file 990's include tax exempt organizations which are not private
+foundations and have more than $200,000 in gross receipts or total assets more than $500,000. Private foundations and smaller non-profits file separate tax documents not
+not included in this data set.
+
+While we have downloaded four years worth of data, we have kept Calendar Year 2015 in reserve for validation. Our goal is to predict Non-Profits which will experience
+the most drastic negative percent change in revenue for the next year since we assume these organizations will be more likely to have difficulty in providing the same
+level of service they have done in prior years.
+
+Combining Our Datasets:
+The organizations which file their taxes vary each year.
+
+2012 records filed: 294,019
+2013 records filed: 289,603
+2014 records filed: 299,405
+
+We combined these records on EIN to create longitudinal dataset. After linking records and dropping records which are missing a total revenue or who have non-positive values for either 2012, 2013, or 2014
+the remaining observations were 234,969 or about 80% of the original observations from 2012.
+
+Absolute Variation in Total Revenue Changes:
+
+For the years we have observed, the median change in revenue is slightly positive. However, the standard deviation for the change in the two year time period from 2012 to 2014 is
+more than $19 million dollars which is nearly 3 times the average total revenue of an organization. Although, there are large outliers in positive and negative percentile changes,
+overall the skew is high in the positive direction.
+
+Absolute Revenue Change 2012 to 2013
+mean $ 299,522.0
+median $ 6,550.0
+standard_deviation $14,296,320.0
+min $-2,059,816,682.0
+max $ 3,297,389,000.0
+
+Absolute Revenue Change 2013 to 2014
+mean $ 330,958.0
+median $ 8,422.0
+standard_deviation $ 16,359,640.0
+min $ -3,534,121,809.0
+max $ 2,197,928,696.0
+
+Absolute Revenue Change 2012 to 2014
+mean $ 630,480.0
+median $ 15,725.0
+standard_deviation $ 19,236,294.0
+min $ -2,060,119,850.0
+max $ 4,560,475,236.0
+
+Percentile Variation in Total Revenue Changes:
+
+The average percentile change in revenue for each year is slightly positive 2.2% on average which is a little more than inflation. Percentile changes in revenue
+are greater in the two year time period on average 4.8% - which indicates that revenue trends between years are correlated.
+
+Revenue changes in the bottom 40% are negative. Since we are concerned with the organizations who are experiencing the largest downward changes in revenue - we will focus
+on predicting the bottom 10% in revenue change for the next year. On average for a one year time period that represents a -28.9% decrease in revenue and on a two year time frame
+that represents a -34.3% decrease.
+
+Quantile Revenue Change 2012 to 2013
+0.1   -0.298
+0.2   -0.138
+0.3   -0.062
+0.4   -0.015
+0.5    0.020
+0.6    0.060
+0.7    0.117
+0.8    0.221
+0.9    0.500
+
+
+
+Quantile Revenue Change 2013 to 2014
+0.1   -0.279
+0.2   -0.124
+0.3   -0.053
+0.4   -0.009
+0.5    0.024
+0.6    0.064
+0.7    0.121
+0.8    0.223
+0.9    0.490
+
+
+Quantile Revenue Change 2012 to 2014
+0.1   -0.343
+0.2   -0.157
+0.3   -0.065
+0.4   -0.003
+0.5    0.048
+0.6    0.107
+0.7    0.190
+0.8    0.334
+0.9    0.714
