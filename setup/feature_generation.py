@@ -15,7 +15,7 @@ def read_file(filename, convert_types = False):
     try:
         data = acg_read.load_file(filename, index = 'EIN')
     except ValueError:
-        data = acg_read.load_file(filename, index = 'EIN_y')
+        data = acg_read.load_file(filename, index = 'EIN_x')
     
     # If you're getting a mixed type error for columns, it's because the 
     # dichotomous variables are incorrectly labeled 'N' and 'Y'. Fix by adding
@@ -50,6 +50,19 @@ def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
     to year2. Uses threshold to determine what negative change to mark as 1 
     (e.g. if threshold is -20, will give values less than -20 a 1).
     '''
+    calc = generate_YOY_rev_change(data, features, year1, year2, False)
+    # Assign True to values that are below threshold
+    second_year = str(year2)
+    column_name = second_year + '_YOY_revenue_fell'
+    calc.dropna(inplace = True)
+    calc[column_name] = calc[second_year + '_rev_change'] < threshold
+    # Returns features dataframe with new column
+    return features.join(calc[column_name])
+
+def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
+    '''
+    Generates raw YOY revenue change as a percentage of the year prior.
+    '''
     base_year = str(year1)
     base_variable = base_year + '_totrevenue'
     second_year = str(year2)
@@ -57,22 +70,20 @@ def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
 
     base = pd.DataFrame(data[base_variable])
     # Remove zero values, as these are suspicious
-    base = base[base[base_variable] != 0]
+    base = base[base[base_variable] != 0].dropna(axis=0)
     # Get second year
     second = pd.DataFrame(data[second_variable])
-    second = second[second[second_variable] != 0]
+    second = second[second[second_variable] != 0].dropna(axis=0)
     # Eliminate orgs that don't have values for both years
     calc = base.join(second, how = 'inner')
     # Calculate YOY change
-    calc['change'] = (calc[second_variable] - calc[base_variable]) /    calc[base_variable]
-    # Assign True to values that are below threshold
-    calc[second_year + '_YOY_revenue_fell'] = calc['change'] < threshold
-    # Returns features dataframe with new column
-    return features.join(calc[second_year + '_YOY_revenue_fell'])
-
-def generate_YOY_rev_change(data, features, year1, year2):
-    pass
-
+    calc[second_year + '_rev_change'] = (calc[second_variable] - 
+     calc[base_variable]) / calc[base_variable]
+    if add_to_features == False:
+        return calc
+    else: 
+        return features.join(calc[second_year + '_rev_change'])
+    
 def generate_missing_for_year():
     '''
     Generates a 0/1 variable for an EIN if missing from one year but present
