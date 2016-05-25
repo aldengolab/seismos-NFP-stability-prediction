@@ -36,8 +36,8 @@ df1=pd.read_csv('eo1.csv')
 df2=pd.read_csv('eo2.csv')
 df3=pd.read_csv('eo3.csv')
 df4=pd.read_csv('eo4.csv')
-#download the zipmsa.csv from github
-dfz=pd.read_csv('zipmsa.csv')
+#download the zipmsagdp.csv from github
+dfz=pd.read_csv('zipmsagdp.csv')
 
 df5=df1.append(df2, ignore_index=True).append(df3, ignore_index=True).append(df4, ignore_index=True)
 df5['ZIP']=pd.DataFrame(list(df5['ZIP'].str.split('-')))
