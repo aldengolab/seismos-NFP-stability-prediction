@@ -46,6 +46,8 @@ def generate_features(data, year1, year2, year3=None):
     if year3:
         features = generate_rev_fall(data, features, year2, year3)
         features = generate_YOY_rev_change(data, features, year2, year3)
+    features = generate_missing_for_year(data, features)
+    
     return features
 
 def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
@@ -71,7 +73,7 @@ def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
     if add_to_features == False:
         return calc
     else: 
-        calc[second_year + '_log_rev_change'] = math.log(calc[second_year + '_rev_change'])
+        calc[second_year + '_log_rev_change'] = np.log(calc[second_year + '_rev_change'])
         return features.join(calc[second_year + '_log_rev_change'])
     
 def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
@@ -116,10 +118,14 @@ def run(filename, new_filename, year1, num_years):
     print "Wrote file to {}".format(new_filename)
             
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 5: 
+        assert '.csv' in sys.argv[1]
+        assert '.csv' in sys.argv[2]
+        year1 = int(sys.argv[3])
+        num_years = int(sys.argv[4])
+        run(sys.argv[1], sys.argv[2], year1, num_years)
+    else:  
         print "This program produces all features for model generation."
         print "It will write the file features data to a separate file."
         print "Number of years must be 2 or 3; all options required.\n"
         print "Usage: python feature_generation.py <DATA FILE> <WRITE FILE> <FIRST YEAR> <NUMBER OF YEARS>"
-    else: 
-        run(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
