@@ -116,7 +116,8 @@ def run(filename, new_filename, year1, num_years):
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         print "This program produces all features for model generation."
-        print "It will write the file features data to a separate file.\n"
+        print "It will write the file features data to a separate file."
+        print "Number of years must be 2 or 3; all options required./n"
         print "Usage: python feature_generation.py <DATA FILE> <WRITE FILE> <FIRST YEAR> <NUMBER OF YEARS>"
     else: 
         run(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
