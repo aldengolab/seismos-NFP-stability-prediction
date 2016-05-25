@@ -8,6 +8,8 @@ import pandas as pd
 import sys
 import math
 
+# For our dataset, we found that these columns needed extra attention. See 
+# convert_types in read_file below.
 MIXED_COLS = [4,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111, 112,113,114,115,116,119,121,122,123,124,125,126,127,128,129,130,131,132,134,135,136,137,138,139,140,145,147,150,151]
 
 def read_file(filename, convert_types = False):
@@ -17,6 +19,7 @@ def read_file(filename, convert_types = False):
     try:
         data = acg_read.load_file(filename, index = 'EIN')
     except ValueError:
+        # For our implementation, some of our data had been uncleanly merged
         data = acg_read.load_file(filename, index = 'EIN_x')
     
     # If you're getting a mixed type error for columns, it's because the 
@@ -43,10 +46,13 @@ def generate_features(data, year1, year2, year3=None):
     features = pd.DataFrame(index = data.index)
     features = generate_rev_fall(data, features, year1, year2)
     features = generate_YOY_rev_change(data, features, year1, year2)
+    
     if year3:
         features = generate_rev_fall(data, features, year2, year3)
         features = generate_YOY_rev_change(data, features, year2, year3)
+        
     features = generate_missing_for_year(data, features)
+    features = generate_NTEE_dummies(data, features)
     
     return features
 
@@ -104,6 +110,14 @@ def generate_missing_for_year(data, features):
         features[col[:4] + '_missing'] = pd.notnull(data[col])
     
     return features
+    
+def generate_NTEE_dummies(data, features):
+    '''
+    Takes the NTEE column and converts to dummies, including one for missing 
+    values.
+    '''
+    new = pd.get_dummies(data['NTEE_CD'])
+    return features.join(new)
     
 def run(filename, new_filename, year1, num_years):
     '''
