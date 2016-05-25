@@ -6,6 +6,7 @@ import acg_process
 import numpy as np
 import pandas as pd
 import sys
+import math
 
 MIXED_COLS = [4,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111, 112,113,114,115,116,119,121,122,123,124,125,126,127,128,129,130,131,132,134,135,136,137,138,139,140,145,147,150,151]
 
@@ -70,7 +71,8 @@ def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
     if add_to_features == False:
         return calc
     else: 
-        return features.join(calc[second_year + '_rev_change'])
+        calc[second_year + '_log_rev_change'] = math.log(calc[second_year + '_rev_change'])
+        return features.join(calc[second_year + '_log_rev_change'])
     
 def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
     '''
@@ -117,7 +119,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         print "This program produces all features for model generation."
         print "It will write the file features data to a separate file."
-        print "Number of years must be 2 or 3; all options required./n"
+        print "Number of years must be 2 or 3; all options required.\n"
         print "Usage: python feature_generation.py <DATA FILE> <WRITE FILE> <FIRST YEAR> <NUMBER OF YEARS>"
     else: 
         run(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
