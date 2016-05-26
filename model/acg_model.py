@@ -68,14 +68,14 @@ def define_clfs_params():
         'KNN': KNeighborsClassifier(n_neighbors = 3) 
         }
     params = { 
-        'RF':{'n_estimators': [1,10,100,1000], 'max_depth': [1,5,10,20,50], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
+        'RF':{'n_estimators': [1,10,100,1000], 'max_depth': [1,3], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
         'LR': {'penalty': ['l1','l2'], 'C': [0.00001,0.0001,0.001,0.01,0.1,1,10]},
         'SGD': {'loss': ['log','perceptron'], 'penalty': ['l2','l1','elasticnet']},
-        'ET': {'n_estimators': [1,10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,5,10,20,50,100], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
+        'ET': {'n_estimators': [1,10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,3], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
         'AB': {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [1,10,100,1000]},
         'GB': {'n_estimators': [1,10,100,1000], 'learning_rate' : [0.001,0.01,0.05,0.1,0.5],'subsample' : [0.1,0.5,1.0], 'max_depth': [1,3,5,10,20,50,100]},
         'NB' : {},
-        'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [1,5,10,20,50,100], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
+        'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [1,3], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
         'SVM' :{'C' :[0.00001,0.0001,0.001,0.01,0.1,1,10],'kernel':['linear']},
         'KNN' :{'n_neighbors': [1,5,10,25,50,100],'weights': ['uniform','distance'],'algorithm': ['auto','ball_tree','kd_tree']}
         }
@@ -145,7 +145,7 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                         if 'AUC' in evalution:
                             result = auc_roc(y_test, y_pred_probs)
                             print('AUC: {}'.format(result))
-                        if plot and result[0] <= max_AUC[1]:
+                        if plot and result[0] <= maximum[1]:
                             plot_precision_recall_n(y_test, y_pred_probs, clf, N)
                             N += 1
                         if 'recall' in evalution:
