@@ -31,6 +31,8 @@ By running `merge_years.py` with the data from the setup folder, you should be a
 
 Not included in this are the GDP per Capita: these were separately merged into the zipmsa.csv file and renamed. We will add support for that eventually; however, it's a relatively easy process to carry out on your own if you need to. 
 
+Strangely, and perhaps worrisomely, the IRS data contains repeated EINs; that means that organizations appear twice in the data, oftentimes with competing values. We de-duplicate on EINs as these are the de-facto unique IDs for the data and keep the first entry for the EIN we encounter. 
+
 ## Building Features
 
 Also contained with the setup folder is the `feature_generation.py` file. This is a fully automated feature generation for the project, using the product of `merge_years.py` to create a new .csv with solely the features to be used. 
