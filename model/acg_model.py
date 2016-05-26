@@ -10,7 +10,7 @@
 
 from __future__ import division
 import sys
-import read
+import acg_read
 import matplotlib.cm as cm
 import copy
 import pandas as pd
@@ -32,7 +32,7 @@ import pylab as pl
 import matplotlib.pyplot as plt
 from scipy import optimize
 import time
-import process
+import acg_process
 import random
 
 THRESHOLD = .75
@@ -41,23 +41,13 @@ def define_project_params():
     '''
     Parameters specific to the project being run.
     '''
-    y_variable = 'SeriousDlqin2yrs'
-    imp_cols = ['MonthlyIncome', 'NumberOfDependents', 'NumberOfTimes90DaysLate',
-    'NumberOfTime60-89DaysPastDueNotWorse', 'NumberOfTime30-59DaysPastDueNotWorse']
-    robustscale_cols = ['MonthlyIncome',
-    'DebtRatio', 'NumberOfOpenCreditLinesAndLoans', 'NumberRealEstateLoansOrLines',
-    'RevolvingUtilizationOfUnsecuredLines']
+    y_variable = '2014_YOY_revenue_fell'
+    imp_cols = ['GDP2013', '2013_rev_change', '2013_YOY_revenue_fell']
+    robustscale_cols = ['2013_rev_change']
     models_to_run = ['KNN', 'RF','LR','AB','NB','DT','SGD']
-    scale_columns = ['RevolvingUtilizationOfUnsecuredLines', 'age', 
-    'NumberOfTime30-59DaysPastDueNotWorse', 'DebtRatio', 
-    'MonthlyIncome', 'NumberOfOpenCreditLinesAndLoans', 
-    'NumberOfTimes90DaysLate', 'NumberRealEstateLoansOrLines',
-    'NumberOfTime60-89DaysPastDueNotWorse', 'NumberOfDependents']
-    X_variables = ['RevolvingUtilizationOfUnsecuredLines', 'age', 
-    'NumberOfTime30-59DaysPastDueNotWorse', 'DebtRatio', 
-    'MonthlyIncome', 'NumberOfOpenCreditLinesAndLoans', 
-    'NumberOfTimes90DaysLate', 'NumberRealEstateLoansOrLines',
-    'NumberOfTime60-89DaysPastDueNotWorse', 'NumberOfDependents']
+    scale_columns = ['GDP2013', '2013_rev_change',]
+    X_variables = ['GDP2013', '2013_rev_change', '2013_YOY_revenue_fell', 
+    '2012_missing', '2013_missing', '2014_missing', 'NTEE_A', 'NTEE_B', 'NTEE_C', 'NTEE_D', 'NTEE_E', 'NTEE_F', 'NTEE_G', 'NTEE_H', 'NTEE_I', 'NTEE_J', 'NTEE_K', 'NTEE_L', 'NTEE_M', 'NTEE_Missing', 'NTEE_N', 'NTEE_O', 'NTEE_P', 'NTEE_Q', 'NTEE_R', 'NTEE_S', 'NTEE_T', 'NTEE_U', 'NTEE_V', 'NTEE_W', 'NTEE_X', 'NTEE_Y', 'NTEE_Z','NTEE_c']
     return (y_variable, imp_cols, models_to_run, robustscale_cols, 
         scale_columns, X_variables)
 
@@ -93,29 +83,36 @@ def define_clfs_params():
     return clfs, params
 
 def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
- imp_cols = [], addl_runs = 0, evalution = ['AUC', 'precision', 'recall'], stat_k = .15, plot = False, 
+ imp_cols = [], addl_runs = 0, evalution = ['AUC', 'precision', 'recall'], stat_k = .20, plot = False, 
  robustscale_cols = [], scale_columns = [], params_iter_max = 50):
     '''
     Runs through each model specified by models_to_run once with each possible
     setting in params.
     '''
     N = 0
-    max_AUC = ('name', 0, 0)
+    maximum = ('name', 0, 0)
     for n in range(1 + addl_runs):
         print('Sampling new test/train split...')
-        X_train, X_test, y_train, y_test = process.test_train_split(dataframe, 
+        # Drop NaNs on y variable, since this is neeeded for validation
+        dataframe.dropna(subset = [y_variable], inplace = True)
+        X_train, X_test, y_train, y_test = acg_process.test_train_split(dataframe, 
             y_variable, test_size=0.1)
+        # Limit to X & Y variables that have been specified
+        X_train = X_train[X_variables]
+        X_test = X_test[X_variables]
+        y_train = y_train.astype(int)
+        y_test = y_test.astype(int)
         print('Imputing data for new split...')
         for col in imp_cols:
-            X_train, mean = process.impute_mean(X_train, col)
-            X_test = process.impute_specific(X_test, col, mean)
+            X_train, mean = acg_process.impute_mean(X_train, col)
+            X_test = acg_process.impute_specific(X_test, col, mean)
         print('Finished imputing, transforming data...')
         for col in robustscale_cols:
-            X_train, scaler = process.robust_transform(X_train, col, keep = True)
-            X_test = process.robust_transform(X_test, col, scaler = scaler)
+            X_train, scaler = acg_process.robust_transform(X_train, col, keep = True)
+            X_test = acg_process.robust_transform(X_test, col, scaler = scaler)
         for col in scale_columns:
-            X_train, maxval, minval = process.normalize_scale(X_train, col = col, keep = True)
-            X_test = process.normalize_scale(X_test, col = col, maxval = maxval, minval = minval)
+            X_train, maxval, minval = acg_process.normalize_scale(X_train, col = col, keep = True)
+            X_test = acg_process.normalize_scale(X_test, col = col, maxval = maxval, minval = minval)
         print('Training model...')
         for index, clf in enumerate([clfs[x] for x in models_to_run]):
             print(models_to_run[index])
@@ -126,24 +123,28 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
             for p in grid:
                 # If cut-off of parameter iterations expected, choose random
                 if len(grid) > params_iter_max:
-                    p = random.choice(grid)
+                    p = random.choice(list(grid))
                 # Run until hitting max number of parameter iterations
                 if iteration < params_iter_max:
                     try:
                         clf.set_params(**p)
                         print(clf)
-                        y_pred_probs = clf.fit(X_train, y_train).predict_proba(
+                        y_pred_probs = clf.fit(X_train, 
+                        y_train).predict_proba(
                             X_test)[:,1]
                         if 'precision' in evalution:
-                            print('Precision: ', precision_at_k(y_test, y_pred_probs, stat_k))
-                        if 'AUC' in evalution:
-                            result = auc_at_k(y_test, y_pred_probs, stat_k)
-                            print('AUC: {}'.format(result))
-                            if result[0] > max_AUC[1]:
-                                max_AUC = (clf, result[0], result[1])
-                                print('Max AUC: {}'.format(max_AUC))
-                                plot_precision_recall_n(y_test, y_pred_probs, clf, N)
+                            result = precision_at_k(y_test, y_pred_probs, 
+                            stat_k)
+                            print('Precision: ', result)
+                            if result[0] > maximum[1]:
+                                maximum = (clf, result[0], result[1])
+                                print('Max Precision: {}'.format(maximum))
+                                plot_precision_recall_n(y_test, 
+                                y_pred_probs, clf, N)
                                 N += 1
+                        if 'AUC' in evalution:
+                            result = auc_roc(y_test, y_pred_probs)
+                            print('AUC: {}'.format(result))
                         if plot and result[0] <= max_AUC[1]:
                             plot_precision_recall_n(y_test, y_pred_probs, clf, N)
                             N += 1
@@ -212,18 +213,11 @@ def accuracy_at_k(y_true, y_scores, k = None):
     y_pred = np.asarray([1 if i >= threshold else 0 for i in y_scores])
     return (metrics.accuracy_score(y_true, y_pred), threshold)
 
-def auc_at_k(y_true, y_scores, k = None):
+def auc_roc(y_true, y_scores):
     '''
-    Dyanamic k-threshold AUC. Defines threshold for Positive at the 
-    value that returns the k*n top values where k is within [0-1]. If k is not
-    specified, threshold will default to THRESHOLD.
+    Computes the Area-Under-the-Curve for the ROC curve. 
     '''
-    if k != None:
-        threshold = np.sort(y_scores)[::-1][int(k*len(y_scores))] 
-    else: 
-        threshold = THRESHOLD
-    y_pred = np.asarray([1 if i >= threshold else 0 for i in y_scores])
-    return (metrics.roc_auc_score(y_true, y_scores), threshold)
+    return metrics.roc_auc_score(y_true, y_scores)
 
 def precision_at_k(y_true, y_scores, k = None):
     '''
@@ -255,15 +249,7 @@ def main(filename):
     '''
     Runs the loop.
     '''
-    dataframe = read.load_file(filename, index = 0)
-    # Replace 98s with missing values
-    dataframe = process.replace_value_with_nan(dataframe, 
-        'NumberOfTime30-59DaysPastDueNotWorse', 98)
-    dataframe = process.replace_value_with_nan(dataframe, 
-        'NumberOfTimes90DaysLate', 98)
-    dataframe = process.replace_value_with_nan(dataframe, 
-        'NumberOfTime60-89DaysPastDueNotWorse', 98)
-
+    dataframe = acg_read.load_file(filename, index = 0)
     clfs, params = define_clfs_params()
     y_variable, imp_cols, models_to_run, robustscale_cols, scale_columns, \
      X_variables = define_project_params()
@@ -272,7 +258,7 @@ def main(filename):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        data = read.load_file(sys.argv[1])
+        data = acg_read.load_file(sys.argv[1])
         main(sys.argv[1])
     else:
         print('Usage: -u model.py <datafilename> > <results_file>')

@@ -86,8 +86,11 @@ def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
     if add_to_features == False:
         return calc
     else: 
-        calc[second_year + '_log_rev_change'] = np.log(calc[second_year + '_rev_change'])
-        return features.join(calc[second_year + '_log_rev_change'])
+        new = np.log(calc[calc[second_year + '_rev_change']!=0][second_year + '_rev_change'])
+        new.name = second_year + '_log_rev_change'
+        calc = calc.join(new)
+        features = features.join(calc[second_year + '_log_rev_change'])
+        return features.join(calc[second_year + '_rev_change'])
     
 def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
     '''
