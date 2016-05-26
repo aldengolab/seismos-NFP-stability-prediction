@@ -121,8 +121,13 @@ def generate_NTEE_dummies(data, features):
     Takes the NTEE column and converts to dummies, including one for missing 
     values.
     '''
-    new = pd.get_dummies(data['NTEE_CD'])
-    return features.join(new)
+    calc = pd.DataFrame(index=data.index)
+    new = data[data['NTEE_CD'].notnull()]['NTEE_CD']
+    calc = calc.join(new, how = 'left') 
+    calc['NTEE_CD'] = 'NTEE_' + calc['NTEE_CD'].str.get(0) 
+    calc.fillna(value = 'NTEE_Missing', inplace = True)
+    rv = pd.get_dummies(calc['NTEE_CD'])
+    return features.join(rv)
     
 def generate_GDP(data, features):
     '''
