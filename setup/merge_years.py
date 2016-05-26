@@ -47,5 +47,5 @@ df.to_csv('BMFData.csv')
 
 df = pd.read_csv('BMFData.csv')
 dfm=pd.read_csv('merged_data.csv')
-dff=dfm.merge(df[['NAME','EIN','ZIP','MSA No.','NTEE_CD']],left_on=dfm['EIN'],right_on=df['EIN'],how='left')
+dff=dfm.merge(df[['NAME','EIN','ZIP','MSA No.','NTEE_CD', 'GDP2013']],left_on=dfm['EIN'],right_on=df['EIN'],how='left')
 dff.to_csv('full_merge_dataset.csv',index=False)
