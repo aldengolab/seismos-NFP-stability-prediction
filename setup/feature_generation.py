@@ -18,9 +18,11 @@ def read_file(filename, convert_types = False):
     '''
     try:
         data = acg_read.load_file(filename, index = 'EIN_x')
+        ind = 'EIN_x'
     except ValueError:
         # For our implementation, some of our data had been uncleanly merged
         data = acg_read.load_file(filename, index = 'EIN')
+        ind = 'EIN'
     
     # If you're getting a mixed type error for columns, it's because the 
     # dichotomous variables are incorrectly labeled 'N' and 'Y'. Fix by adding
@@ -30,7 +32,7 @@ def read_file(filename, convert_types = False):
             data[data.columns[i]].replace(to_replace = 'N', value=0, inplace = True)
             data[data.columns[i]].replace(to_replace = 'Y', value=1, inplace = True)
             
-    data = data.reset_index().drop_duplicates(subset = 'EIN').set_index('EIN')
+    data = data.reset_index().drop_duplicates(subset = ind).set_index(ind)
             
     return data
     
