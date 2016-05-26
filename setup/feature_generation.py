@@ -74,10 +74,10 @@ def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
 
     base = pd.DataFrame(data[base_variable])
     # Remove zero values, as these are suspicious
-    base = base[base[base_variable] != 0].dropna(axis=0)
+    base = base[base_variable].dropna(axis=0)
     # Get second year
     second = pd.DataFrame(data[second_variable])
-    second = second[second[second_variable] != 0].dropna(axis=0)
+    second = second[second_variable].dropna(axis=0)
     # Eliminate orgs that don't have values for both years
     calc = base.join(second, how = 'inner')
     # Calculate YOY change
