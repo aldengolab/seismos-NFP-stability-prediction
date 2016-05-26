@@ -55,7 +55,7 @@ def generate_features(data, year1, year2, year3=None):
         
     features = generate_missing_for_year(data, features)
     features = generate_NTEE_dummies(data, features)
-    
+    features = generate_GDP(data, features)
     return features
 
 def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
@@ -121,6 +121,18 @@ def generate_NTEE_dummies(data, features):
     '''
     new = pd.get_dummies(data['NTEE_CD'])
     return features.join(new)
+    
+def generate_GDP(data, features):
+    '''
+    Transfers the GDP column from data to features.
+    '''
+    cols = []
+    for col in data.columns: 
+        if 'GDP' in col: 
+            cols.append(col)
+    for col in cols: 
+        features[col] = data[col]
+    return features
     
 def run(filename, new_filename, year1, num_years):
     '''
