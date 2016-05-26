@@ -17,10 +17,10 @@ def read_file(filename, convert_types = False):
     Reads csv file.
     '''
     try:
-        data = acg_read.load_file(filename, index = 'EIN')
+        data = acg_read.load_file(filename, index = 'EIN_x')
     except ValueError:
         # For our implementation, some of our data had been uncleanly merged
-        data = acg_read.load_file(filename, index = 'EIN_x')
+        data = acg_read.load_file(filename, index = 'EIN')
     
     # If you're getting a mixed type error for columns, it's because the 
     # dichotomous variables are incorrectly labeled 'N' and 'Y'. Fix by adding
@@ -29,6 +29,8 @@ def read_file(filename, convert_types = False):
         for i in MIXED_COLS:
             data[data.columns[i]].replace(to_replace = 'N', value=0, inplace = True)
             data[data.columns[i]].replace(to_replace = 'Y', value=1, inplace = True)
+            
+    data = data.reset_index().drop_duplicates(subset = 'EIN').set_index('EIN')
             
     return data
     
@@ -107,7 +109,8 @@ def generate_missing_for_year(data, features):
         if '_totrevenue' in x: 
             cols.append(x)
     for col in cols: 
-        features[col[:4] + '_missing'] = pd.notnull(data[col])
+        new = pd.notnull(data[col])
+        features[col[:4] + '_missing'] = new
     
     return features
     
