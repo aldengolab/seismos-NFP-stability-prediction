@@ -53,31 +53,35 @@ def generate_features(data, year1, year2, year3=None):
     features = pd.DataFrame(index = data.index)
     features = generate_rev_fall(data, features, year1, year2)
     features = generate_YOY_rev_change(data, features, year1, year2)
+    features = generate_YOY_change_payroll_taxes(data, features, year1, year2)
+    features = generate_YOY_change_net_assets(data, features, year1, year2)
+    features = gen_one_year_prior_neg_revenue(data, features, year2)
     
     if year3:
         features = generate_rev_fall(data, features, year2, year3)
         features = generate_YOY_rev_change(data, features, year2, year3)
+        features = generate_YOY_change_payroll_taxes(data, features, year2, year3)
+        features = generate_YOY_change_net_assets(data, features, year2, year3)
+        features = gen_one_year_prior_neg_revenue(data, features, year3)
         
     features = generate_missing_for_year(data, features)
     features = generate_NTEE_dummies(data, features)
     features = generate_GDP(data, features)
+    features = generate_employee_number(data, features, ignore_year='2014')
+    
     return features
 
 def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
     '''
-    Generates raw YOY revenue change as a percentage of the year prior.
+    Generates YOY revenue change as a percentage of the year prior.
     '''
     base_year = str(year1)
     base_variable = base_year + '_totrevenue'
     second_year = str(year2)
     second_variable = second_year + '_totrevenue'
 
-    base = pd.DataFrame(data[base_variable])
-    # Remove zero values, as these are suspicious
-    base = base[base_variable].dropna(axis=0)
-    # Get second year
-    second = pd.DataFrame(data[second_variable])
-    second = second[second_variable].dropna(axis=0)
+    base = pd.DataFrame(data[base_variable].dropna(axis=0))
+    second = pd.DataFrame(data[second_variable].dropna(axis=0))
     # Eliminate orgs that don't have values for both years
     calc = base.join(second, how = 'inner')
     # Calculate YOY change
@@ -86,10 +90,6 @@ def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
     if add_to_features == False:
         return calc
     else: 
-        new = np.log(calc[calc[second_year + '_rev_change']!=0][second_year + '_rev_change'])
-        new.name = second_year + '_log_rev_change'
-        calc = calc.join(new)
-        features = features.join(calc[second_year + '_log_rev_change'])
         return features.join(calc[second_year + '_rev_change'])
     
 def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
@@ -145,6 +145,65 @@ def generate_GDP(data, features):
             cols.append(col)
     for col in cols: 
         features[col] = data[col]
+    return features
+    
+def generate_employee_number(data, features, ignore_year):
+    '''
+    Adds any employee counts that are not the test year.
+    '''
+    for col in data.columns: 
+        if 'noemployees' in col and ignore_year not in col:
+            features = features.join(calc[col])
+    return features
+
+def generate_YOY_change_payroll_taxes(data, features, year1, year2):
+    '''
+    Returns a feature set with yoy percent change in payroll taxes paid by org
+    between year1 and year2.
+    '''
+    base_year = str(year1)
+    base_variable = base_year + '_payrolltx'
+    second_year = str(year2)
+    second_variable = second_year + '_payrolltx'
+
+    base = pd.DataFrame(data[base_variable].dropna(axis=0))
+    second = pd.DataFrame(data[second_variable].dropna(axis=0))
+    
+    # Eliminate orgs that don't have values for both years
+    calc = base.join(second, how = 'inner')
+    # Calculate YOY change
+    calc[second_year + '_payroll_change'] = (calc[second_variable] - 
+     calc[base_variable]) / calc[base_variable]
+
+    return features.join(calc[second_year + '_payroll_change'])
+    
+def generate_YOY_change_net_assets(data, features, year1, year2):
+    '''
+    Returns a feature set with yoy percent change in net assets 
+    and log change between year1 and year2.
+    '''
+    base_year = str(year1)
+    base_variable = base_year + '_totnetassetend'
+    second_year = str(year2)
+    second_variable = second_year + '_totnetassetend'
+
+    base = pd.DataFrame(data[base_variable].dropna(axis=0))
+    second = pd.DataFrame(data[second_variable].dropna(axis=0))
+    
+    # Eliminate orgs that don't have values for both years
+    calc = base.join(second, how = 'inner')
+    # Calculate YOY change
+    calc[second_year + '_totnetassetend_change'] = (calc[second_variable] - 
+     calc[base_variable]) / calc[base_variable]
+
+    return features.join(calc[second_year + '_totnetassetend_change'])
+    
+def gen_one_year_prior_neg_revenue(data, features, year): 
+    '''
+    0/1 for whether year has negative revenue.
+    '''
+    column_name = str(year) + '_negative_revenue'
+    features[column_name] = data[data[str(year) + '_totrevenue'] < 0]
     return features
     
 def run(filename, new_filename, year1, num_years):
