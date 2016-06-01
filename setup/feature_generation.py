@@ -12,15 +12,17 @@ import math
 # convert_types in read_file below.
 MIXED_COLS = [4,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111, 112,113,114,115,116,119,121,122,123,124,125,126,127,128,129,130,131,132,134,135,136,137,138,139,140,145,147,150,151]
 
-def read_file(filename, convert_types = False):
+def read_file(filename, convert_types = False, drop_duplicates = True):
     '''
     Reads csv file.
     '''
     try:
-        data = acg_read.load_file(filename, index = 'EIN')
+        data = acg_read.load_file(filename, index = 'EIN_x')
+        ind = 'EIN_x'
     except ValueError:
         # For our implementation, some of our data had been uncleanly merged
-        data = acg_read.load_file(filename, index = 'EIN_x')
+        data = acg_read.load_file(filename, index = 'EIN')
+        ind = 'EIN'
     
     # If you're getting a mixed type error for columns, it's because the 
     # dichotomous variables are incorrectly labeled 'N' and 'Y'. Fix by adding
@@ -29,6 +31,11 @@ def read_file(filename, convert_types = False):
         for i in MIXED_COLS:
             data[data.columns[i]].replace(to_replace = 'N', value=0, inplace = True)
             data[data.columns[i]].replace(to_replace = 'Y', value=1, inplace = True)
+    if drop_duplicates: 
+        data = data.reset_index().drop_duplicates(subset = ind, keep = 
+         False).set_index(ind)
+    else:
+        data = data.reset_index().drop_duplicates(subset = ind).set_index(ind)
             
     return data
     
@@ -53,7 +60,7 @@ def generate_features(data, year1, year2, year3=None):
         
     features = generate_missing_for_year(data, features)
     features = generate_NTEE_dummies(data, features)
-    
+    features = generate_GDP(data, features)
     return features
 
 def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
@@ -67,10 +74,10 @@ def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
 
     base = pd.DataFrame(data[base_variable])
     # Remove zero values, as these are suspicious
-    base = base[base[base_variable] != 0].dropna(axis=0)
+    base = base[base_variable].dropna(axis=0)
     # Get second year
     second = pd.DataFrame(data[second_variable])
-    second = second[second[second_variable] != 0].dropna(axis=0)
+    second = second[second_variable].dropna(axis=0)
     # Eliminate orgs that don't have values for both years
     calc = base.join(second, how = 'inner')
     # Calculate YOY change
@@ -79,8 +86,11 @@ def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
     if add_to_features == False:
         return calc
     else: 
-        calc[second_year + '_log_rev_change'] = np.log(calc[second_year + '_rev_change'])
-        return features.join(calc[second_year + '_log_rev_change'])
+        new = np.log(calc[calc[second_year + '_rev_change']!=0][second_year + '_rev_change'])
+        new.name = second_year + '_log_rev_change'
+        calc = calc.join(new)
+        features = features.join(calc[second_year + '_log_rev_change'])
+        return features.join(calc[second_year + '_rev_change'])
     
 def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
     '''
@@ -107,7 +117,8 @@ def generate_missing_for_year(data, features):
         if '_totrevenue' in x: 
             cols.append(x)
     for col in cols: 
-        features[col[:4] + '_missing'] = pd.notnull(data[col])
+        new = pd.notnull(data[col])
+        features[col[:4] + '_missing'] = new
     
     return features
     
@@ -116,8 +127,25 @@ def generate_NTEE_dummies(data, features):
     Takes the NTEE column and converts to dummies, including one for missing 
     values.
     '''
-    new = pd.get_dummies(data['NTEE_CD'])
-    return features.join(new)
+    calc = pd.DataFrame(index=data.index)
+    new = data[data['NTEE_CD'].notnull()]['NTEE_CD']
+    calc = calc.join(new, how = 'left') 
+    calc['NTEE_CD'] = 'NTEE_' + calc['NTEE_CD'].str.get(0) 
+    calc.fillna(value = 'NTEE_Missing', inplace = True)
+    rv = pd.get_dummies(calc['NTEE_CD'])
+    return features.join(rv)
+    
+def generate_GDP(data, features):
+    '''
+    Transfers the GDP column from data to features.
+    '''
+    cols = []
+    for col in data.columns: 
+        if 'GDP' in col: 
+            cols.append(col)
+    for col in cols: 
+        features[col] = data[col]
+    return features
     
 def run(filename, new_filename, year1, num_years):
     '''
