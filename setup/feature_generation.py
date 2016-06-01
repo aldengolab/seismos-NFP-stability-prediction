@@ -8,7 +8,7 @@ import pandas as pd
 import sys
 import math
 
-def read_file(filename, convert_types = False, drop_duplicates = True):
+def read_file(filename):
     '''
     Reads csv file.
     '''
@@ -42,7 +42,6 @@ def generate_features(data, year1, year2, year3=None):
     features = generate_YOY_rev_change(data, features, year1, year2)
     features = generate_YOY_change_payroll_taxes(data, features, year1, year2)
     features = generate_YOY_change_net_assets(data, features, year1, year2)
-    #features = gen_one_year_prior_neg_revenue(data, features, year2)
     
     if year3:
         features = generate_rev_fall(data, features, year2, year3)
@@ -185,19 +184,11 @@ def generate_YOY_change_net_assets(data, features, year1, year2):
 
     return features.join(calc[second_year + '_totnetassetend_change'])
     
-def gen_one_year_prior_neg_revenue(data, features, year): 
-    '''
-    0/1 for whether year has negative revenue.
-    '''
-    column_name = str(year) + '_negative_revenue'
-    features[column_name] = data[data[str(year) + '_totrevenue'] < 0]
-    return features
-    
 def run(filename, new_filename, year1, num_years):
     '''
     Runs all feature generation.
     '''
-    data = read_file(filename, convert_types = True)
+    data = read_file(filename)
     if num_years == 2: 
         features = generate_features(data, year1, year1 + 1)
     if num_years == 3:
