@@ -12,9 +12,11 @@ df2015 = pd.read_table("15eofinextract990.dat", sep = ' ')
 df2012.drop_duplicates(subset='EIN', keep=False, inplace=True)
 df2013.drop_duplicates(subset='EIN', keep=False, inplace=True)
 df2014.drop_duplicates(subset='EIN', keep=False, inplace=True)
-df2012 = df2012[df2012['tot_revenue'] > 0]
-df2013 = df2013[df2013['tot_revenue'] > 0]
-df2014 = df2014[df2014['tot_revenue'] > 0]
+df2015.drop_duplicates(subset='EIN', keep=False, inplace=True)
+df2012 = df2012[df2012['totrevenue'] > 0]
+df2013 = df2013[df2013['totrevenue'] > 0]
+df2014 = df2014[df2014['totrevenue'] > 0]
+df2015 = df2015[df2015['totrevenue'] > 0]
 
 #### get list of columns
 cols12 = df2012.columns
@@ -35,31 +37,23 @@ mergecols14 = ["2014_" + col for col in cols14 if col != "EIN"]
 mergecols14.insert(0,"EIN")
 df2014.columns = mergecols14
 
+cols15 = df2015.columns
+cols15 = list(cols15)
+mergecols15 = ["2015_" + col for col in cols15 if col != "EIN"]
+mergecols15.insert(0,"EIN")
+df2015.columns = mergecols15
+
 #####merge
 df12_13 = pd.merge(df2012, df2013,  how = 'outer', on = 'EIN')
 dfmerge = pd.merge(df12_13, df2014, how = 'outer', on = 'EIN')
 print 'Merged file has {} rows, saved to merged_data.csv'.format(len(dfmerge))
 dfmerge.to_csv("merged_data.csv")
 
-'''
-#https://www.irs.gov/Charities-&-Non-Profits/Exempt-Organizations-Business-Master-File-Extract-EO-BMF
-df1=pd.read_csv('eo1.csv')
-df2=pd.read_csv('eo2.csv')
-df3=pd.read_csv('eo3.csv')
-df4=pd.read_csv('eo4.csv')
-#download the zipmsagdp.csv from github
-dfz=pd.read_csv('zipmsa.csv')
-'''
-
-df5=df1.append(df2, ignore_index=True).append(df3, ignore_index=True).append(df4, ignore_index=True)
-df5['ZIP']=pd.DataFrame(list(df5['ZIP'].str.split('-')))
-dfz['ZIP CODE']=pd.Series(dfz['ZIP CODE']).astype(str).str.zfill(5)
-df=df5.merge(dfz, how='left', left_on=['ZIP','STATE'],right_on=['ZIP CODE','STATE'])
-df.to_csv('BMFData.csv')
-
 df = pd.read_csv('BMFData.csv')
-dfm=pd.read_csv('merged_data.csv')
-dff=dfm.merge(df[['NAME','EIN','ZIP','MSA No.','NTEE_CD', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2005', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2012', 'GDP2013', 'GDP2014', 'GDP2015']],left_on=dfm['EIN'],right_on=df['EIN'],how='left')
+dfm = pd.read_csv('merged_data.csv')
+
+dff = dfm.merge(df[['NAME','EIN','ZIP','MSA No.','NTEE_CD', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2005', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2012', 'GDP2013', 'GDP2014', 'GDP2015']],left_on=dfm['EIN'],right_on=df['EIN'],how='left')
+df_15 = df2015.merge(dff,left_on=df2015['EIN'],right_on=dff['EIN'],how='left')
 
 #### Replace Y and N with intelligible values
 for i in dff.columns:
@@ -69,6 +63,14 @@ for i in dff.columns:
     except: 
         break
 
+for i in df_15.columns: 
+    try:
+        df_15[i].replace(to_replace = 'N', value=0, inplace = True)
+        df_15[i].replace(to_replace = 'Y', value=1, inplace = True)
+    except: 
+        break
+
 ### Write out to file
-dff.to_csv('full_merge_dataset.csv',index=False)
-print 'File saved to full_merge_dataset.csv'
+dff.to_csv('2014_full_merge_dataset.csv',index=False)
+df_15.to_csv('2015_full_merge_dataset.csv', index=False)
+print 'File saved to 2014_full_merge_dataset.csv and 2015_full_merge_dataset.csv'
