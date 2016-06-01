@@ -8,10 +8,6 @@ import pandas as pd
 import sys
 import math
 
-# For our dataset, we found that these columns needed extra attention. See 
-# convert_types in read_file below.
-MIXED_COLS = [4,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111, 112,113,114,115,116,119,121,122,123,124,125,126,127,128,129,130,131,132,134,135,136,137,138,139,140,145,147,150,151]
-
 def read_file(filename, convert_types = False, drop_duplicates = True):
     '''
     Reads csv file.
@@ -27,15 +23,6 @@ def read_file(filename, convert_types = False, drop_duplicates = True):
     # If you're getting a mixed type error for columns, it's because the 
     # dichotomous variables are incorrectly labeled 'N' and 'Y'. Fix by adding
     # convert_types = True to this function.
-    if convert_types:
-        for i in MIXED_COLS:
-            data[data.columns[i]].replace(to_replace = 'N', value=0, inplace = True)
-            data[data.columns[i]].replace(to_replace = 'Y', value=1, inplace = True)
-    if drop_duplicates: 
-        data = data.reset_index().drop_duplicates(subset = ind, keep = 
-         False).set_index(ind)
-    else:
-        data = data.reset_index().drop_duplicates(subset = ind).set_index(ind)
             
     return data
     
@@ -55,7 +42,7 @@ def generate_features(data, year1, year2, year3=None):
     features = generate_YOY_rev_change(data, features, year1, year2)
     features = generate_YOY_change_payroll_taxes(data, features, year1, year2)
     features = generate_YOY_change_net_assets(data, features, year1, year2)
-    features = gen_one_year_prior_neg_revenue(data, features, year2)
+    #features = gen_one_year_prior_neg_revenue(data, features, year2)
     
     if year3:
         features = generate_rev_fall(data, features, year2, year3)

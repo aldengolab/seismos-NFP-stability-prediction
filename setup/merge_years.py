@@ -1,10 +1,20 @@
 import pandas as pd
 
+NONZERO_COLUMNS = ['tot_revenue']
+
 #### read in files
 df2012 = pd.read_table("py12_990.dat", sep = ' ')
 df2013 = pd.read_table("py13_990.dat", sep = ' ')
 df2014 = pd.read_table("py14_990.dat", sep = ' ')
 df2015 = pd.read_table("15eofinextract990.dat", sep = ' ')
+
+#### drop duplicates and non-positive values for revenue
+df2012.drop_duplicates(subset='EIN', keep=False, inplace=True)
+df2013.drop_duplicates(subset='EIN', keep=False, inplace=True)
+df2014.drop_duplicates(subset='EIN', keep=False, inplace=True)
+df2012 = df2012[df2012['tot_revenue'] > 0]
+df2013 = df2013[df2013['tot_revenue'] > 0]
+df2014 = df2014[df2014['tot_revenue'] > 0]
 
 #### get list of columns
 cols12 = df2012.columns
@@ -28,9 +38,10 @@ df2014.columns = mergecols14
 #####merge
 df12_13 = pd.merge(df2012, df2013,  how = 'outer', on = 'EIN')
 dfmerge = pd.merge(df12_13, df2014, how = 'outer', on = 'EIN')
-print(len(dfmerge))
+print 'Merged file has {} rows, saved to merged_data.csv'.format(len(dfmerge))
 dfmerge.to_csv("merged_data.csv")
 
+'''
 #https://www.irs.gov/Charities-&-Non-Profits/Exempt-Organizations-Business-Master-File-Extract-EO-BMF
 df1=pd.read_csv('eo1.csv')
 df2=pd.read_csv('eo2.csv')
@@ -38,6 +49,7 @@ df3=pd.read_csv('eo3.csv')
 df4=pd.read_csv('eo4.csv')
 #download the zipmsagdp.csv from github
 dfz=pd.read_csv('zipmsa.csv')
+'''
 
 df5=df1.append(df2, ignore_index=True).append(df3, ignore_index=True).append(df4, ignore_index=True)
 df5['ZIP']=pd.DataFrame(list(df5['ZIP'].str.split('-')))
@@ -47,5 +59,16 @@ df.to_csv('BMFData.csv')
 
 df = pd.read_csv('BMFData.csv')
 dfm=pd.read_csv('merged_data.csv')
-dff=dfm.merge(df[['NAME','EIN','ZIP','MSA No.','NTEE_CD', 'GDP2013']],left_on=dfm['EIN'],right_on=df['EIN'],how='left')
+dff=dfm.merge(df[['NAME','EIN','ZIP','MSA No.','NTEE_CD', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2005', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2012', 'GDP2013', 'GDP2014', 'GDP2015']],left_on=dfm['EIN'],right_on=df['EIN'],how='left')
+
+#### Replace Y and N with intelligible values
+for i in dff.columns:
+    try:
+        dff[i].replace(to_replace = 'N', value=0, inplace = True)
+        dff[i].replace(to_replace = 'Y', value=1, inplace = True)
+    except: 
+        break
+
+### Write out to file
 dff.to_csv('full_merge_dataset.csv',index=False)
+print 'File saved to full_merge_dataset.csv'
