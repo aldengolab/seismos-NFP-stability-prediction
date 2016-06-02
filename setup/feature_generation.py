@@ -139,7 +139,7 @@ def generate_employee_number(data, features, ignore_year):
     '''
     for col in data.columns: 
         if 'noemployees' in col and ignore_year not in col:
-            features = features.join(calc[col])
+            features = features.join(data[col])
     return features
 
 def generate_YOY_change_payroll_taxes(data, features, year1, year2):
