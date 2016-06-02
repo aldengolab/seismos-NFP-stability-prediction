@@ -1,4 +1,6 @@
 ### This file creates the BMFData.csv for use in the merge_years.py file
+### Raw files have been made available on the github:
+### https://github.com/aldengolab/seismos-NFP-stability-prediction/tree/master/data
 
 import pandas as pd
 
