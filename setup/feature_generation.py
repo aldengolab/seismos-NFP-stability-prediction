@@ -20,10 +20,6 @@ def read_file(filename):
         data = acg_read.load_file(filename, index = 'EIN')
         ind = 'EIN'
 
-    # If you're getting a mixed type error for columns, it's because the
-    # dichotomous variables are incorrectly labeled 'N' and 'Y'. Fix by adding
-    # convert_types = True to this function.
-
     return data
 
 def generate_features(data, year1, year2, year3=None):
@@ -37,21 +33,44 @@ def generate_features(data, year1, year2, year3=None):
     - Columns are named: "YYYY_variablename" where YYYY is the year and
       variablename is the column label from the IRS.
     '''
+    # Generate YOY features
     features = pd.DataFrame(index = data.index)
     features = generate_rev_fall(data, features, year1, year2)
     features = generate_YOY_rev_change(data, features, year1, year2)
     features = generate_YOY_change_payroll_taxes(data, features, year1, year2)
     features = generate_YOY_change_net_assets(data, features, year1, year2)
+    # Generate year specific features
+    features = generate_member_income(data, features, year1)
+    features = generate_member_income(data, features, year2)
+    features = generate_all_percent_of_revenue(data, features, year1)
+    features = generate_all_percent_of_revenue(data, features, year2)
+    features = generate_fundraising_ROI(data, features, year1)
+    features = generate_fundraising_ROI(data, features, year2)
+    features = generate_ratio(data, features, '_totliabend', '_totnetassetend', '_debtassetratio', year1)
+    features = generate_ratio(data, features, '_totliabend', '_totnetassetend', '_debtassetratio', year2)
+    features = generate_ratio(data, features, '_totsupp509', '_totrevenue', '_supportrevratio', year1)
+    features = generate_ratio(data, features, '_totsupp509', '_totrevenue', '_supportrevratio', year2)
+    features = generate_gov_support(data, features, year1)
+    features = generate_gov_support(data, features, year2)
     features =  copy_features(data, features, ['grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
 
     if year3:
+        # YOY change features
         features = generate_rev_fall(data, features, year2, year3)
         features = generate_YOY_rev_change(data, features, year2, year3)
-        features = generate_YOY_change_payroll_taxes(data, features, year2, year3)
-        features = generate_YOY_change_net_assets(data, features, year2, year3)
+        features = generate_YOY_change_payroll_taxes(data, features, year2, 
+        year3)
+        features = generate_YOY_change_net_assets(data, features, year2, 
+        year3)
+        # Year specific features
         features = gen_one_year_prior_neg_revenue(data, features, year3)
+        features = generate_member_income(data, features, year3)
+        features = generate_all_percent_of_revenue(data, features, year3)
+        features = generate_fundraising_ROI(data, features, year3)
+        features = generate_ratio(data, features, '_totliabend', '_totnetassetend', '_debtassetratio', year3)
+        features = generate_ratio(data, features, '_totsupp509', '_totrevenue', '_supportrevratio', year3)
+        features = generate_gov_support(data, features, year3)
         features =  copy_features(data, features, ['grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2, year3])
-
 
     features = generate_missing_for_year(data, features)
     features = generate_NTEE_dummies(data, features)
@@ -202,6 +221,73 @@ def generate_YOY_change_net_assets(data, features, year1, year2):
      calc[base_variable]) / calc[base_variable]
 
     return features.join(calc[second_year + '_totnetassetend_change'])
+    
+def generate_member_income(data, features, year):
+    '''
+    0/1 for whether organization reports having member receipts.
+    '''
+    column = str(year) + '_' + 'grsincmembers'
+    features = features.join(data[column] > 0)
+    return features
+    
+def generate_all_percent_of_revenue(data, features, year):
+    '''
+    Generates all features that use a percent of revenue for a year.
+    '''
+    columns = {'totprgmrevnue': 'programs', 'invstmntinc': 'investments', 'netrntlinc': 'rental', 'netgnls':'assets_sale', 'netincfndrsng': 'fundraising', 'grsalesinvent': 'inventory_sale'}
+    
+    for col in columns.keys():
+        new, dummy = percent_of_x(data, col, year)
+        new.name = str(year) + '_' + columns[col] + '_perofrev'
+        dummy.name = new.name + '_isnegative'
+        features = features.join(new)
+        features = features.join(dummy)
+    return features
+    
+def generate_fundraising_ROI(data, features, year):
+    '''
+    Generates ROI for fundraising for a given year.
+    '''
+    f_cost = str(year) + '_lessdirfndrsng'
+    f_return = str(year) + '_netincfndrsng'
+    rv = (data[f_return].dropna(axis=0) / data[f_cost]).dropna(axis=0)
+    rv.name = str(year) + '_fundraisingROI'
+    return features.join(rv)
+
+def generate_ratio(data, features, numerator, denominator, name, year):
+    '''
+    Generates debt asset ratio for a given year.
+    '''
+    d_col = str(year) + numerator
+    a_col = str(year) + denominator
+    rv = (data[d_col].dropna() / data[data[a_col] > 0][a_col].dropna()).dropna()
+    rv.name = str(year) + name
+    return features.join(rv)
+    
+def percent_of_x(data, column, year, denom = '_totrevenue'):
+    '''
+    Calculates the percent of revenue for an organization from the given
+    column for the given year.
+    
+    Returns both the calculation and a 0/1 column for those with percent 
+    values less than 1 (meaning they had negative denom or column). 
+    '''
+    column_ref = str(year) + '_' + column
+    column_rev = str(year) + denom
+    rv = (data[column_ref].dropna(axis=0) / data[column_rev]).dropna(axis=0)
+    return (rv[rv >= 0], rv < 0)
+
+def generate_gov_support(data, features, year):
+    '''
+    Generates the % of government support coming from taxes & services. 
+    '''
+    columns = {'srvcsval509': '_persupp_govservices', 'txrevnuelevied509': '_persupp_govtaxes'}
+    for col in columns.keys():
+        new = percent_of_x(data, col, year, denom = '_totsupp509')[0]
+        new.name = str(year) + '_' + columns[col]
+        features = features.join(new)
+    return features
+
 
 def run(filename, new_filename, year1, num_years):
     '''
