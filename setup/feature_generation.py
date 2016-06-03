@@ -42,13 +42,16 @@ def generate_features(data, year1, year2, year3=None):
     features = generate_YOY_rev_change(data, features, year1, year2)
     features = generate_YOY_change_payroll_taxes(data, features, year1, year2)
     features = generate_YOY_change_net_assets(data, features, year1, year2)
-    
+    features = generate_YOY_changepercent(data, features, year1, year2)
+
     if year3:
         features = generate_rev_fall(data, features, year2, year3)
         features = generate_YOY_rev_change(data, features, year2, year3)
         features = generate_YOY_change_payroll_taxes(data, features, year2, year3)
         features = generate_YOY_change_net_assets(data, features, year2, year3)
         features = gen_one_year_prior_neg_revenue(data, features, year3)
+        features = generate_YOY_changepercent(data, features, year1, year2)
+
         
     features = generate_missing_for_year(data, features)
     features = generate_NTEE_dummies(data, features)
@@ -183,6 +186,42 @@ def generate_YOY_change_net_assets(data, features, year1, year2):
      calc[base_variable]) / calc[base_variable]
 
     return features.join(calc[second_year + '_totnetassetend_change'])
+
+
+def generate_YOY_changepercent(data, features, year1, year2):
+    '''
+    Returns a feature set with yoy percent change in payroll taxes paid by org
+    between year1 and year2.
+    '''
+    '''
+    ['grsrcptspublicuse','totassetsend','totliabend','totfuncexpns','compnsatncurrofcr','grsincmembers'
+    ,'totprgmrevnue','invstmntinc','netrntlinc','netgnls','gnlsecur','netincfndrsng','lessdirfndrsng'
+    ,'netincsales','srvcsval170','txrevnuelevied170','unsecurednotesend']
+    '''
+    var=[]
+    for v in data.columns:
+        var.append(v[5:])
+
+    for l in var:
+        try:
+            base_year = str(year1)
+            base_variable = base_year +'_'+l
+            second_year = str(year2)
+            second_variable = second_year +'_'+l
+
+            base = pd.DataFrame(data[base_variable].dropna(axis=0))
+            second = pd.DataFrame(data[second_variable].dropna(axis=0))
+            
+            # Eliminate orgs that don't have values for both years
+            calc = base.join(second, how = 'inner')
+            calc=calc[calc[base_variable] != 0]
+            # Calculate YOY change
+            calc[second_year + l+ '_changepercent'] = (calc[second_variable] - calc[base_variable]) / calc[base_variable]
+            features=features.join(calc[second_year + l+'_changepercent'])
+        except:
+            continue
+    return features
+
     
 def run(filename, new_filename, year1, num_years):
     '''
