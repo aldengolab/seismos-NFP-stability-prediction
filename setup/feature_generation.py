@@ -20,10 +20,6 @@ def read_file(filename):
         data = acg_read.load_file(filename, index = 'EIN')
         ind = 'EIN'
 
-    # If you're getting a mixed type error for columns, it's because the
-    # dichotomous variables are incorrectly labeled 'N' and 'Y'. Fix by adding
-    # convert_types = True to this function.
-
     return data
 
 def generate_features(data, year1, year2, year3=None):
@@ -43,7 +39,6 @@ def generate_features(data, year1, year2, year3=None):
     features = generate_YOY_rev_change(data, features, year1, year2)
     features = generate_YOY_change_payroll_taxes(data, features, year1, year2)
     features = generate_YOY_change_net_assets(data, features, year1, year2)
-<<<<<<< HEAD
     # Generate year specific features
     features = generate_member_income(data, features, year1)
     features = generate_member_income(data, features, year2)
@@ -57,11 +52,8 @@ def generate_features(data, year1, year2, year3=None):
     features = generate_ratio(data, features, '_totsupp509', '_totrevenue', '_supportrevratio', year2)
     features = generate_gov_support(data, features, year1)
     features = generate_gov_support(data, features, year2)
-    
-=======
     features =  copy_features(data, features, ['grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
 
->>>>>>> e03422f3f942b40450e7e1a645de6d758f2e09be
     if year3:
         # YOY change features
         features = generate_rev_fall(data, features, year2, year3)
@@ -72,19 +64,14 @@ def generate_features(data, year1, year2, year3=None):
         year3)
         # Year specific features
         features = gen_one_year_prior_neg_revenue(data, features, year3)
-<<<<<<< HEAD
         features = generate_member_income(data, features, year3)
         features = generate_all_percent_of_revenue(data, features, year3)
         features = generate_fundraising_ROI(data, features, year3)
         features = generate_ratio(data, features, '_totliabend', '_totnetassetend', '_debtassetratio', year3)
         features = generate_ratio(data, features, '_totsupp509', '_totrevenue', '_supportrevratio', year3)
         features = generate_gov_support(data, features, year3)
-        
-=======
         features =  copy_features(data, features, ['grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2, year3])
 
-
->>>>>>> e03422f3f942b40450e7e1a645de6d758f2e09be
     features = generate_missing_for_year(data, features)
     features = generate_NTEE_dummies(data, features)
     features = generate_GDP(data, features)
@@ -146,11 +133,7 @@ def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
 
 def generate_missing_for_year(data, features):
     '''
-<<<<<<< HEAD
-    Generates a 0/1 variable for an EIN if totrevenue is missing from one 
-=======
     Generates a 0/1 variable for an EIN if tot_revenue is missing from one
->>>>>>> e03422f3f942b40450e7e1a645de6d758f2e09be
     year but present in others.
     '''
     cols = []
@@ -238,7 +221,6 @@ def generate_YOY_change_net_assets(data, features, year1, year2):
      calc[base_variable]) / calc[base_variable]
 
     return features.join(calc[second_year + '_totnetassetend_change'])
-<<<<<<< HEAD
     
 def generate_member_income(data, features, year):
     '''
@@ -305,8 +287,7 @@ def generate_gov_support(data, features, year):
         new.name = str(year) + '_' + columns[col]
         features = features.join(new)
     return features
-=======
->>>>>>> e03422f3f942b40450e7e1a645de6d758f2e09be
+
 
 def run(filename, new_filename, year1, num_years):
     '''
