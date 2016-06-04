@@ -265,6 +265,7 @@ def main(filename):
     '''
      X_drop = ['2013_payroll_change', '2013_totnetassetend_change', '2012_fundraisingROI', '2013_fundraisingROI', '2012__persupp_govtaxes', '2012__persupp_govservices', '2013__persupp_govtaxes']
     '''
+    # Drop row if missing y-variable
     dataframe = dataframe[dataframe[y_variable].notnull()]
     # If a column has more than 40% missing, don't use
     X_drop = []
@@ -275,6 +276,10 @@ def main(filename):
         X_variables.remove(x)
         imp_cols.remove(x)
     # Drop row if missing y-variable
+        if x in X_variables:
+            X_variables.remove(x)
+        if x in imp_cols:
+            imp_cols.remove(x)
     # Run the loop
     clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
         imp_cols = imp_cols, robustscale_cols=robustscale_cols, scale_columns = scale_columns)
