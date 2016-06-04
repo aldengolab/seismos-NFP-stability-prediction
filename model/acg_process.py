@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 import copy
 import sklearn.cross_validation
-import sklearn.preprocessing
+from sklearn import preprocessing
+from sklearn.preprocessing import RobustScaler
 
 def impute(data, column, method = 'mean', classification = None,
     distribution = None, write = False, keep = False):
@@ -118,9 +119,9 @@ def robust_transform(dataframe, column, keep = False, scaler = None):
     Performs robust transformation on column.
     '''
     if scaler == None and not keep:
-        new = sklearn.preprocessing.robust_scale(dataframe[column].reshape(-1,1))
+        new = preprocessing.robust_scale(dataframe[column].reshape(-1,1))
     elif keep:
-        scaler_set = sklearn.preprocessing.RobustScaler(with_centering=True, with_scaling=True, copy=True)
+        scaler_set = preprocessing.RobustScaler(with_centering=True, with_scaling=True, copy=True)
         new = scaler_set.fit_transform(dataframe[column].reshape(-1,1))
     elif scaler != None:
         new = scaler.transform(dataframe[column].reshape(-1,1))
