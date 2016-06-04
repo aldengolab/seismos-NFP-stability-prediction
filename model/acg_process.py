@@ -23,6 +23,8 @@ def impute(data, column, method = 'mean', classification = None,
     '''
     if method == 'mean':
         data, mean = impute_mean(data, column)
+    elif method == 'median:
+        data, mean = impute_median(data, column)
     elif method == 'conditional':
         if classification == None:
             raise ValueError('Classification needed for conditional imputation.')
@@ -56,6 +58,19 @@ def impute_mean(data, column):
     data = data.drop(column, axis = 1)
     data = pd.concat([data, new], axis = 1)
     return (data, mean)
+    
+def impute_median(data, column):
+    '''
+    Generalized median imputation.
+    '''
+    median = data[column].median()
+    imp = sklearn.preprocessing.Imputer(missing_values='NaN', strategy='median', axis=0)
+    new = pd.DataFrame(imp.fit_transform(data[column].reshape(-1,1)))
+    new.index = data.index
+    new.columns = [column]
+    data = data.drop(column, axis = 1)
+    data = pd.concat([data, new], axis = 1)
+    return (data, median)
 
 def impute_cond(data, column, classification):
     '''

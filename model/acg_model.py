@@ -104,8 +104,8 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
         y_test = y_test.astype(int)
         print('Imputing data for new split...')
         for col in imp_cols:
-            X_train, mean = acg_process.impute_mean(X_train, col)
-            X_test = acg_process.impute_specific(X_test, col, mean)
+            X_train, median = acg_process.impute_median(X_train, col)
+            X_test = acg_process.impute_specific(X_test, col, median)
         print('Finished imputing, transforming data...')
         for col in robustscale_cols:
             X_train, scaler = acg_process.robust_transform(X_train, col, keep = True)
