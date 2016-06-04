@@ -1,8 +1,8 @@
 # CAPP 30254: Machine Learning for Public Policy
 # ALDEN GOLAB
 # ML Pipeline
-# 
-# Model loop. 
+#
+# Model loop.
 
 ## CODE STRUCTURE LIBERALLY BORROWED FROM RAYID GHANI, WITH EXTENSIVE EDITS ##
 ## https://github.com/rayidghani/magicloops/blob/master/magicloops.py ##
@@ -65,25 +65,25 @@ def define_clfs_params():
         'NB': GaussianNB(),
         'DT': DecisionTreeClassifier(),
         'SGD': SGDClassifier(loss = 'log', penalty = 'l2'),
-        'KNN': KNeighborsClassifier(n_neighbors = 3) 
+        'KNN': KNeighborsClassifier(n_neighbors = 3)
         }
-    params = { 
-        'RF':{'n_estimators': [1,10,100,1000], 'max_depth': [10, 15,20,30,40,50,60,70,100], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
-        'LR': {'penalty': ['l1','l2'], 'C': [0.00001,0.0001,0.001,0.01,0.1,1,10]},
-        'SGD': {'loss': ['log','perceptron'], 'penalty': ['l2','l1','elasticnet']},
-        'ET': {'n_estimators': [1,10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,3,5,10,15], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
-        'AB': {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [1,10,100,1000]},
-        'GB': {'n_estimators': [1,10,100,1000], 'learning_rate' : [0.001,0.01,0.05,0.1,0.5],'subsample' : [0.1,0.5,1.0], 'max_depth': [1,3,5,10,20,50,100]},
+    params = {
+        'RF':{'n_estimators': [1,10,100,1000], 'max_depth': [10, 15,20,30,40,50,60,70,100], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': 1},
+        'LR': {'penalty': ['l1','l2'], 'C': [0.00001,0.0001,0.001,0.01,0.1,1,10],'random_state': 1},
+        'SGD': {'loss': ['log','perceptron'], 'penalty': ['l2','l1','elasticnet'], 'random_state': 1},
+        'ET': {'n_estimators': [1,10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,3,5,10,15], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': 1},
+        'AB': {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [1,10,100,1000], 'random_state': 1},
+        'GB': {'n_estimators': [1,10,100,1000], 'learning_rate' : [0.001,0.01,0.05,0.1,0.5],'subsample' : [0.1,0.5,1.0], 'max_depth': [1,3,5,10,20,50,100], 'random_state': 1},
         'NB' : {},
-        'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [15,20,30,40,50], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
-        'SVM' :{'C' :[0.00001,0.0001,0.001,0.01,0.1,1,10],'kernel':['linear']},
-        'KNN' :{'n_neighbors': [1,5,10,25,50,100],'weights': ['uniform','distance'],'algorithm': ['auto','ball_tree','kd_tree']}
+        'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [15,20,30,40,50], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': 1},
+        'SVM' :{'C' :[0.00001,0.0001,0.001,0.01,0.1,1,10],'kernel':['linear'], 'random_state': 1},
+        'KNN' :{'n_neighbors': [1,5,10,25,50,100],'weights': ['uniform','distance'],'algorithm': ['auto','ball_tree','kd_tree'], 'random_state': 1}
         }
-    
+
     return clfs, params
 
-def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
- imp_cols = [], addl_runs = 9, evalution = ['AUC', 'precision', 'recall'], stat_k = .10, plot = False, 
+def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
+ imp_cols = [], addl_runs = 9, evalution = ['AUC', 'precision', 'recall'], stat_k = .10, plot = False,
  robustscale_cols = [], scale_columns = [], params_iter_max = 50, randomize_features = None):
     '''
     Runs through each model specified by models_to_run once with each possible
@@ -95,14 +95,14 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
         print('Sampling new test/train split...')
         # Drop NaNs on y variable, since this is neeeded for validation
         dataframe.dropna(subset = [y_variable], inplace = True)
-        X_train, X_test, y_train, y_test = acg_process.test_train_split(dataframe, 
+        X_train, X_test, y_train, y_test = acg_process.test_train_split(dataframe,
             y_variable, test_size=0.1)
         # Limit to X & Y variables that have been specified
-        if randomize_features: 
+        if randomize_features:
             size = len(X_variables) * randomize_features
             rand_X = random.sample(X_variables, int(size))
             print("New X Variables: {}".format(X_variables))
-        else: 
+        else:
             rand_X = X_variables
         X_train = X_train[rand_X]
         X_test = X_test[rand_X]
@@ -110,7 +110,7 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
         y_test = y_test.astype(int)
         print('Imputing data for new split...')
         for col in imp_cols:
-            if col in rand_X: 
+            if col in rand_X:
                 X_train, median = acg_process.impute_median(X_train, col)
                 X_test = acg_process.impute_specific(X_test, col, median)
         print('Finished imputing, transforming data...')
@@ -119,7 +119,7 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                 X_train, scaler = acg_process.robust_transform(X_train, col, keep = True)
                 X_test = acg_process.robust_transform(X_test, col, scaler = scaler)
         for col in scale_columns:
-            if col in rand_X: 
+            if col in rand_X:
                 X_train, maxval, minval = acg_process.normalize_scale(X_train, col = col, keep = True)
                 X_test = acg_process.normalize_scale(X_test, col = col, maxval = maxval, minval = minval)
         print('Finished transfroming. The final training set has the shape',X_train.shape)
@@ -139,20 +139,20 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                     try:
                         clf.set_params(**p)
                         print(clf)
-                        y_pred_probs = clf.fit(X_train, 
+                        y_pred_probs = clf.fit(X_train,
                         y_train).predict_proba(
                             X_test)[:,1]
                         if 'precision' in evalution:
-                            result = precision_at_k(y_test, y_pred_probs, 
+                            result = precision_at_k(y_test, y_pred_probs,
                             stat_k)
                             print('Precision: ', result)
                             if result[0] > maximum[1]:
                                 maximum = (clf, result[0], result[1])
                                 print('Max Precision: {}'.format(maximum))
-                                plot_precision_recall_n(y_test, 
+                                plot_precision_recall_n(y_test,
                                 y_pred_probs, clf, N)
                                 N += 1
-                                if models_to_run[index] == 'RF': 
+                                if models_to_run[index] == 'RF':
                                     importances = clf.feature_importances_
                                     sortedidx = np.argsort(importances)
                                     best_features = X_train.columns[sortedidx]
@@ -193,13 +193,13 @@ def plot_precision_recall_n(y_true, y_prob, model_name, N):
     recall_curve = recall_curve[:-1]
     pct_above_per_thresh = []
     number_scored = len(y_score)
-    
+
     for value in pr_thresholds:
         num_above_thresh = len(y_score[y_score>=value])
         pct_above_thresh = num_above_thresh / float(number_scored)
         pct_above_per_thresh.append(pct_above_thresh)
     pct_above_per_thresh = np.array(pct_above_per_thresh)
-    
+
     plt.clf()
     fig, ax1 = plt.subplots()
     ax1.plot(pct_above_per_thresh, precision_curve, 'b')
@@ -208,7 +208,7 @@ def plot_precision_recall_n(y_true, y_prob, model_name, N):
     ax2 = ax1.twinx()
     ax2.plot(pct_above_per_thresh, recall_curve, 'r')
     ax2.set_ylabel('recall', color='r')
-    
+
     model = str(model_name)[:20]
     name = '{}_{}.png'.format(model, N)
     print('File saved as {} for model above'.format(name))
@@ -216,53 +216,53 @@ def plot_precision_recall_n(y_true, y_prob, model_name, N):
     plt.savefig(name)
     #plt.show()
     plt.close()
-    
+
 def accuracy_at_k(y_true, y_scores, k = None):
     '''
-    Dyanamic k-threshold accuracy. Defines threshold for Positive at the 
+    Dyanamic k-threshold accuracy. Defines threshold for Positive at the
     value that returns the k*n top values where k is within [0-1]. If k is not
     specified, threshold will default to THRESHOLD.
     '''
     if k != None:
-        threshold = np.sort(y_scores)[::-1][int(k*len(y_scores))] 
-    else: 
+        threshold = np.sort(y_scores)[::-1][int(k*len(y_scores))]
+    else:
         threshold = THRESHOLD
     y_pred = np.asarray([1 if i >= threshold else 0 for i in y_scores])
     return (metrics.accuracy_score(y_true, y_pred), threshold)
 
 def auc_roc(y_true, y_scores):
     '''
-    Computes the Area-Under-the-Curve for the ROC curve. 
+    Computes the Area-Under-the-Curve for the ROC curve.
     '''
     return metrics.roc_auc_score(y_true, y_scores)
 
 def precision_at_k(y_true, y_scores, k = None):
     '''
-    Dyanamic k-threshold precision. Defines threshold for Positive at the 
+    Dyanamic k-threshold precision. Defines threshold for Positive at the
     value that returns the k*n top values where k is within [0-1]. If k is not
     specified, threshold will default to THRESHOLD.
     '''
     if k != None:
-        threshold = np.sort(y_scores)[::-1][int(k*len(y_scores))] 
-    else: 
+        threshold = np.sort(y_scores)[::-1][int(k*len(y_scores))]
+    else:
         threshold = THRESHOLD
     y_pred = np.asarray([1 if i >= threshold else 0 for i in y_scores])
     return (metrics.precision_score(y_true, y_pred), threshold)
 
 def recall_at_k(y_true, y_scores, k = None):
     '''
-    Dyanamic k-threshold recall. Defines threshold for Positive at the 
+    Dyanamic k-threshold recall. Defines threshold for Positive at the
     value that returns the k*n top values where k is within [0-1]. If k is not
     specified, threshold will default to THRESHOLD.
     '''
     if k != None:
-        threshold = np.sort(y_scores)[::-1][int(k*len(y_scores))] 
-    else: 
+        threshold = np.sort(y_scores)[::-1][int(k*len(y_scores))]
+    else:
         threshold = THRESHOLD
     y_pred = np.asarray([1 if i >= threshold else 0 for i in y_scores])
     return (metrics.recall_score(y_true, y_pred), threshold)
 
-def main(filename): 
+def main(filename):
     '''
     Runs the loop.
     '''
@@ -274,7 +274,7 @@ def main(filename):
     # Remove any infinities, replace with missing
     dataframe=dataframe.replace([np.inf, -np.inf], np.nan)
     # Find any columns with missing values, set to impute
-    for x in X_variables: 
+    for x in X_variables:
         if len(dataframe[dataframe[x].isnull()]) > 0:
             imp_cols.append(x)
     '''
@@ -284,10 +284,10 @@ def main(filename):
     dataframe = dataframe[dataframe[y_variable].notnull()]
     # If a column has more than 40% missing, don't use
     X_drop = []
-    for x in X_variables: 
-        if len(dataframe[dataframe[x].isnull()]) / len(dataframe) > 0.4: 
+    for x in X_variables:
+        if len(dataframe[dataframe[x].isnull()]) / len(dataframe) > 0.4:
             X_drop.append(x)
-    for x in X_drop: 
+    for x in X_drop:
         X_variables.remove(x)
         imp_cols.remove(x)
     # Drop row if missing y-variable
@@ -296,7 +296,7 @@ def main(filename):
         if x in imp_cols:
             imp_cols.remove(x)
     # Run the loop
-    clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
+    clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
         imp_cols = imp_cols, scale_columns = scale_columns, robustscale_cols = robustscale_cols)
 
 if __name__ == '__main__':
