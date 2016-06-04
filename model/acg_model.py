@@ -85,7 +85,7 @@ def define_clfs_params():
 
 def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
  imp_cols = [], addl_runs = 9, evalution = ['AUC', 'precision', 'recall'], stat_k = .10, plot = False, 
- robustscale_cols = [], scale_columns = [], params_iter_max = 50, randomize_features = .5):
+ robustscale_cols = [], scale_columns = [], params_iter_max = 50, randomize_features = None):
     '''
     Runs through each model specified by models_to_run once with each possible
     setting in params.
@@ -132,7 +132,6 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
             grid = ParameterGrid(parameter_values)
             iteration = 0
             for p in grid:
-                sys.stderr.write('Running a parameter set.')
                 # If cut-off of parameter iterations expected, choose random
                 if len(grid) > params_iter_max:
                     p = random.choice(list(grid))
@@ -272,9 +271,9 @@ def main(filename):
     # Get all the necessary parameters
     clfs, params = define_clfs_params()
     y_variable, imp_cols, models_to_run, robustscale_cols, scale_columns = define_project_params()
-    X_variables = X_columns=[i for i in dataframe.columns if not i==y_variable]
+    X_variables = [i for i in dataframe.columns if i != y_variable]
     # Remove any infinities, replace with missing
-    dataframe=dataframe.replace([np.inf, -np.inf], np.nan)
+    dataframe = dataframe.replace([np.inf, -np.inf], np.nan)
     # Find any columns with missing values, set to impute
     for x in X_variables: 
         if len(dataframe[dataframe[x].isnull()]) > 0:
