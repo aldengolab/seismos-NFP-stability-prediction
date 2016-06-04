@@ -20,7 +20,7 @@ from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier, Gradi
 from sklearn.linear_model import LogisticRegression, Perceptron, SGDClassifier, OrthogonalMatchingPursuit, RandomizedLogisticRegression
 from sklearn.neighbors.nearest_centroid import NearestCentroid
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cross_validation import train_test_split
 from sklearn.grid_search import ParameterGrid
@@ -158,6 +158,8 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                                     sortedidx = np.argsort(importances)
                                     best_features = X_train.columns[sortedidx]
                                     print(best_features[::-1])
+                                if models_to_run[index] == 'DT':
+                                    export_graphviz(clf, 'DT_graph_' + N + '.dot')
                         if 'AUC' in evalution:
                             result = auc_roc(y_test, y_pred_probs)
                             print('AUC: {}'.format(result))
