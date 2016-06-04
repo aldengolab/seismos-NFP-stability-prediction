@@ -23,7 +23,7 @@ def impute(data, column, method = 'mean', classification = None,
     '''
     if method == 'mean':
         data, mean = impute_mean(data, column)
-    elif method == 'median:
+    elif method == 'median':
         data, mean = impute_median(data, column)
     elif method == 'conditional':
         if classification == None:
@@ -58,7 +58,7 @@ def impute_mean(data, column):
     data = data.drop(column, axis = 1)
     data = pd.concat([data, new], axis = 1)
     return (data, mean)
-    
+
 def impute_median(data, column):
     '''
     Generalized median imputation.
@@ -183,7 +183,7 @@ def discretize(data, column, bins = 5, bin_size = None, labels = None, max_val =
 def dichotomize(data, column, append = True):
     '''
     NEEDS FIXING
-    
+
     Takes a categorical column and makes new, binary columns for each value.
 
     Output: pandas dataframe with new columns
@@ -197,7 +197,7 @@ def dichotomize(data, column, append = True):
             set_to_add1 = pd.concat([set_1, add], axis = 1, join = 'inner')
         # Add zeroes to attributes that do not match
         set_0 = data[data[column] != value]
-         
+
         add = pd.DataFrame({value: [0] * len(set_0)}, index=set_0.index)
         if append:
             set_to_add0 = pd.concat([set_0, add], axis = 1, join = 'inner')
