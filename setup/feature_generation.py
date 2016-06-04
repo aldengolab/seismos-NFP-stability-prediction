@@ -34,6 +34,7 @@ def generate_features(data, year1, year2, year3=None):
     '''
     # Generate YOY features
     features = pd.DataFrame(index = data.index)
+    features = generate_NTEE_dummies(data, features)
     features = generate_rev_fall(data, features, year1, year2)
     features = generate_YOY_rev_change(data, features, year1, year2)
     features = generate_YOY_change_payroll_taxes(data, features, year1, year2)
@@ -69,15 +70,13 @@ def generate_features(data, year1, year2, year3=None):
         features = generate_YOY_changepercent(data, features, year2, year3)
   
     if year3:
-    	features = generate_GDP(data, features,list(range(2002,year3+1)))
-    	features = generate_missing_for_year(data, features,[year1,year2,year3])
-    	features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1,year2,year3])
+        features = generate_GDP(data, features,list(range(2002,year3+1)))
+        features = generate_missing_for_year(data, features,[year1,year2,year3])
+        features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1,year2,year3])
     else:
-    	features = generate_GDP(data, features,list(range(2002,year2+1)))
-    	features = generate_missing_for_year(data, features,[year1,year2])
-    	features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
-	
-	features = generate_NTEE_dummies(data, features)
+        features = generate_GDP(data, features,list(range(2002,year2+1)))
+        features = generate_missing_for_year(data, features,[year1,year2])
+        features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
 
     return features
 
@@ -115,28 +114,28 @@ def generate_YOY_changepercent(data, features, year1, year2):
     li=['elf', 's501c3or4947a1cd', 'schdbind', 'politicalactvtscd', 'lbbyingactvtscd', 'subjto6033cd', 'dnradvisedfundscd', 'prptyintrcvdcd', 'maintwrkofartcd', 'crcounselingqstncd', 'hldassetsintermpermcd', 'rptlndbldgeqptcd', 'rptinvstothsecd', 'rptinvstprgrelcd', 'rptothasstcd', 'rptothliabcd', 'sepcnsldtfinstmtcd', 'sepindaudfinstmtcd', 'inclinfinstmtcd', 'operateschools170cd', 'frgnofficecd', 'frgnrevexpnscd', 'frgngrntscd', 'frgnaggragrntscd', 'rptprofndrsngfeescd', 'rptincfnndrsngcd', 'rptincgamingcd', 'operatehosptlcd', 'hospaudfinstmtcd', 'rptgrntstogovtcd', 'rptgrntstoindvcd', 'rptyestocompnstncd', 'txexmptbndcd', 'invstproceedscd', 'maintescrwaccntcd', 'actonbehalfcd', 'engageexcessbnftcd', 'awarexcessbnftcd', 'loantofficercd', 'grantoofficercd', 'dirbusnreltdcd', 'fmlybusnreltdcd', 'servasofficercd', 'recvnoncashcd', 'recvartcd', 'ceaseoperationscd', 'sellorexchcd', 'ownsepentcd', 'reltdorgcd', 'intincntrlcd', 'orgtrnsfrcd', 'conduct5percentcd', 'compltschocd', 'wthldngrulescd', 'filerqrdrtnscd', 'unrelbusinccd', 'filedf990tcd', 'frgnacctcd', 'prohibtdtxshltrcd', 'prtynotifyorgcd', 'filedf8886tcd', 'solicitcntrbcd', 'exprstmntcd', 'providegoodscd', 'notfydnrvalcd', 'filedf8282cd', 'fndsrcvdcd', 'premiumspaidcd', 'filedf8899cd', 'filedf1098ccd', 'excbushldngscd', 's4966distribcd', 'distribtodonorcd', 'filedlieuf1041cd', 'qualhlthplncd', 'rcvdpdtngcd', 'filedf720cd', 'subseccd', 'nonpfrea', 'tax_pd', 'prgmservcode2acd', 'prgmservcode2bcd', 'prgmservcode2ccd', 'prgmservcode2dcd', 'prgmservcode2ecd', 'miscrev11acd', 'miscrev11bcd', 'miscrev11ccd']
 
     for v in data.columns:
-    	if v[5:] in li: 
-    		pass
-    	else:
-	        l=v[5:]
-	        try:
-	            base_year = str(year1)
-	            base_variable = base_year +'_'+l
-	            second_year = str(year2)
-	            second_variable = second_year +'_'+l
+        if v[5:] in li: 
+            pass
+        else:
+            l=v[5:]
+            try:
+                base_year = str(year1)
+                base_variable = base_year +'_'+l
+                second_year = str(year2)
+                second_variable = second_year +'_'+l
 
-	            base = pd.DataFrame(data[base_variable].dropna(axis=0))
-	            second = pd.DataFrame(data[second_variable].dropna(axis=0))
-	            
-	            # Eliminate orgs that don't have values for both years
-	            calc = base.join(second, how = 'inner')
-	            calc=calc[calc[base_variable] != 0]
-	            # Calculate YOY change
-	            calc[second_variable+'_changepercent'] = (calc[second_variable] - calc[base_variable]) / calc[base_variable]
-	            features=features.join(calc[second_variable+'_changepercent'])
-	            print second_variable," percent change was calculated."
-	        except:
-	            continue
+                base = pd.DataFrame(data[base_variable].dropna(axis=0))
+                second = pd.DataFrame(data[second_variable].dropna(axis=0))
+                
+                # Eliminate orgs that don't have values for both years
+                calc = base.join(second, how = 'inner')
+                calc=calc[calc[base_variable] != 0]
+                # Calculate YOY change
+                calc[second_variable+'_changepercent'] = (calc[second_variable] - calc[base_variable]) / calc[base_variable]
+                features=features.join(calc[second_variable+'_changepercent'])
+                print second_variable," percent change was calculated."
+            except:
+                continue
     return features
 
 def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
@@ -200,8 +199,8 @@ def generate_missing_for_year(data, features, years):
     for year in years:
         cols.append(str(year) + '_totrevenue')
     for col in cols:
-    	new = pd.notnull(data[col])
-    	features[col[:4] + '_missing'] = new
+        new = pd.notnull(data[col])
+        features[col[:4] + '_missing'] = new
     return features
 
 def generate_NTEE_dummies(data, features):
