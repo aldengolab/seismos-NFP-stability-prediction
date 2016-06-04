@@ -2,7 +2,6 @@
 # Creates all features for seismos model
 
 import acg_read
-import acg_process
 import numpy as np
 import pandas as pd
 import sys
@@ -52,31 +51,82 @@ def generate_features(data, year1, year2, year3=None):
     features = generate_ratio(data, features, '_totsupp509', '_totrevenue', '_supportrevratio', year2)
     features = generate_gov_support(data, features, year1)
     features = generate_gov_support(data, features, year2)
-    features =  copy_features(data, features, ['grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
+    features = generate_YOY_changepercent(data, features, year1, year2)
 
     if year3:
         # YOY change features
         features = generate_rev_fall(data, features, year2, year3)
         features = generate_YOY_rev_change(data, features, year2, year3)
-        features = generate_YOY_change_payroll_taxes(data, features, year2, 
-        year3)
-        features = generate_YOY_change_net_assets(data, features, year2, 
-        year3)
+        features = generate_YOY_change_payroll_taxes(data, features, year2, year3)
+        features = generate_YOY_change_net_assets(data, features, year2, year3)
         # Year specific features
-        features = gen_one_year_prior_neg_revenue(data, features, year3)
         features = generate_member_income(data, features, year3)
         features = generate_all_percent_of_revenue(data, features, year3)
         features = generate_fundraising_ROI(data, features, year3)
         features = generate_ratio(data, features, '_totliabend', '_totnetassetend', '_debtassetratio', year3)
         features = generate_ratio(data, features, '_totsupp509', '_totrevenue', '_supportrevratio', year3)
         features = generate_gov_support(data, features, year3)
-        features =  copy_features(data, features, ['grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2, year3])
+        features = generate_YOY_changepercent(data, features, year2, year3)
+        features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year3])
 
+    features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
+    features = generate_GDP(data, features)
     features = generate_missing_for_year(data, features)
     features = generate_NTEE_dummies(data, features)
-    features = generate_GDP(data, features)
-    features = generate_employee_number(data, features, ignore_year='2014')
 
+    return features
+
+def generate_YOY_changepercent(data, features, year1, year2):
+    '''
+    Returns a feature set with yoy percent change in payroll taxes paid by org
+    between year1 and year2.
+    '''
+    '''
+    ['grsrcptspublicuse','totassetsend','totliabend','totfuncexpns','compnsatncurrofcr','grsincmembers'
+    ,'totprgmrevnue','invstmntinc','netrntlinc','netgnls','gnlsecur','netincfndrsng','lessdirfndrsng'
+    ,'netincsales','srvcsval170','txrevnuelevied170','unsecurednotesend']
+    '''
+    for v in features.columns:
+        l=v[5:]
+        try:
+            base_year = str(year1)
+            base_variable = base_year +'_'+l
+            second_year = str(year2)
+            second_variable = second_year +'_'+l
+
+            base = pd.DataFrame(features[base_variable].dropna(axis=0))
+            second = pd.DataFrame(features[second_variable].dropna(axis=0))
+            
+            # Eliminate orgs that don't have values for both years
+            calc = base.join(second, how = 'inner')
+            calc=calc[calc[base_variable] != 0]
+            # Calculate YOY change
+            calc[second_varialbe+'_changepercent'] = (calc[second_variable] - calc[base_variable]) / calc[base_variable]
+            features=features.join(calc[second_variable+'_changepercent'])
+            print second_variable," percent change was calculated."
+        except:
+            continue
+            
+    for v in data.columns:
+        l=v[5:]
+        try:
+            base_year = str(year1)
+            base_variable = base_year +'_'+l
+            second_year = str(year2)
+            second_variable = second_year +'_'+l
+
+            base = pd.DataFrame(data[base_variable].dropna(axis=0))
+            second = pd.DataFrame(data[second_variable].dropna(axis=0))
+            
+            # Eliminate orgs that don't have values for both years
+            calc = base.join(second, how = 'inner')
+            calc=calc[calc[base_variable] != 0]
+            # Calculate YOY change
+            calc[second_variable+'_changepercent'] = (calc[second_variable] - calc[base_variable]) / calc[base_variable]
+            features=features.join(calc[second_variable+'_changepercent'])
+            print second_variable," percent change was calculated."
+        except:
+            continue
     return features
 
 def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
@@ -171,15 +221,6 @@ def generate_GDP(data, features):
         features[col] = data[col]
     return features
 
-def generate_employee_number(data, features, ignore_year):
-    '''
-    Adds any employee counts that are not the test year.
-    '''
-    for col in data.columns:
-        if 'noemployees' in col and ignore_year not in col:
-            features = features.join(data[col])
-    return features
-
 def generate_YOY_change_payroll_taxes(data, features, year1, year2):
     '''
     Returns a feature set with yoy percent change in payroll taxes paid by org
@@ -218,7 +259,7 @@ def generate_YOY_change_net_assets(data, features, year1, year2):
     calc = base.join(second, how = 'inner')
     # Calculate YOY change
     calc[second_year + '_totnetassetend_change'] = (calc[second_variable] -
-     calc[base_variable]) / calc[base_variable]
+    calc[base_variable]) / calc[base_variable]
 
     return features.join(calc[second_year + '_totnetassetend_change'])
     
