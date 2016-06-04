@@ -153,6 +153,11 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                                 plot_precision_recall_n(y_test, 
                                 y_pred_probs, clf, N)
                                 N += 1
+                                if models_to_run[index] == 'RF': 
+                                    importances = clf.feature_importances_
+                                    sortedidx = np.argsort(importances)
+                                    best_features = X_train.columns[sortedidx]
+                                    print(best_features[::-1])
                         if 'AUC' in evalution:
                             result = auc_roc(y_test, y_pred_probs)
                             print('AUC: {}'.format(result))
@@ -285,7 +290,7 @@ def main(filename):
             imp_cols.remove(x)
     # Run the loop
     clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
-        imp_cols = imp_cols, scale_columns = scale_columns)
+        imp_cols = imp_cols, scale_columns = scale_columns, robustscale_cols = robustscale_cols)
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
