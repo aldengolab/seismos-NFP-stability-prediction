@@ -101,7 +101,7 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
         if randomize_features: 
             size = len(X_variables) * randomize_features
             rand_X = random.sample(X_variables, int(size))
-            print "New X Variables: {}".format(X_variables)
+            print("New X Variables: {}".format(X_variables))
         else: 
             rand_X = X_variables
         X_train = X_train[rand_X]
