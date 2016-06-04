@@ -271,7 +271,7 @@ def main(filename):
         X_variables.remove(x)
         imp_cols.remove(x)
     # Drop row if missing y-variable
-    data = data[data[y_variable].notnull()]
+    dataframe = dataframe[dataframe[y_variable].notnull()]
     # Run the loop
     clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
         imp_cols = imp_cols, scale_columns = scale_columns)
