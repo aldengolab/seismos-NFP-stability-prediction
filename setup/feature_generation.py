@@ -36,6 +36,7 @@ def generate_features(data, year1, year2, year3=None):
     features = pd.DataFrame(index = data.index)
     features = generate_NTEE_dummies(data, features)
     features = generate_rev_fall(data, features, year1, year2)
+    features = generate_rev_fall(data, features, year1+1, year2+1)
     features = generate_YOY_rev_change(data, features, year1, year2)
     features = generate_YOY_change_payroll_taxes(data, features, year1, year2)
     features = generate_YOY_change_net_assets(data, features, year1, year2)
@@ -77,7 +78,7 @@ def generate_features(data, year1, year2, year3=None):
         features = generate_GDP(data, features,list(range(2002,year2+1)))
         features = generate_missing_for_year(data, features,[year1,year2])
         features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
-
+    print 'Finished feature generation. The result dataframe has the shape',features.shape
     return features
 
 def generate_YOY_changepercent(data, features, year1, year2):
@@ -153,7 +154,7 @@ def generate_YOY_rev_change(data, features, year1, year2, add_to_features=True):
     calc = base.join(second, how = 'inner')
     # Calculate YOY change
     calc[second_year + '_rev_change'] = (calc[second_variable] -
-     calc[base_variable]) / calc[base_variable]
+    calc[base_variable]) / calc[base_variable]
     if add_to_features == False:
         return calc
     else:
@@ -188,6 +189,7 @@ def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
     calc.dropna(inplace = True)
     calc[column_name] = calc[second_year + '_rev_change'] < threshold
     # Returns features dataframe with new column
+    print column_name,"was calculated"
     return features.join(calc[column_name])
 
 def generate_missing_for_year(data, features, years):

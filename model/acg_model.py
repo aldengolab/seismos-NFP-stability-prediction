@@ -41,15 +41,15 @@ def define_project_params():
     '''
     Parameters specific to the project being run.
     '''
-    models_to_run = ['DT', 'RF', 'SGD', 'LR', 'AB']
+    models_to_run = ['DT', 'SGD', 'LR', 'KNN', 'RF','AB','ET']
     y_variable = '2014_YOY_revenue_fell'
     imp_cols = []
     robustscale_cols = ['2013_rev_change', '2012_grsincmembers', '2013_grsincmembers', '2012_inventory_sale_perofrev', '2012_investments_perofrev', '2012_programs_perofrev', '2013_inventory_sale_perofrev', '2013_investments_perofrev', '2013_programs_perofrev', '2013_inventory_sale_perofrev', '2013_investments_perofrev', '2013_programs_perofrev', '2013_rental_perofrev', '2012_debtassetratio', '2013_debtassetratio', '2012_supportrevratio', '2013_supportrevratio', '2013_initiationfees_changepercent', '2013_grsrcptspublicuse_changepercent', '2013_grsincmembers_changepercent', '2013_grsincother_changepercent', '2013_totcntrbgfts_changepercent', '2013_totprgmrevnue_changepercent', '2013_invstmntinc_changepercent', '2013_txexmptbndsproceeds_changepercent', '2013_royaltsinc_changepercent', '2013_grsrntsreal_changepercent', '2013_grsrntsprsnl_changepercent', '2013_rntlexpnsreal_changepercent', '2013_rntlexpnsprsnl_changepercent', '2013_rntlincreal_changepercent', '2013_rntlincprsnl_changepercent', '2013_netrntlinc_changepercent', '2013_grsalesecur_changepercent', '2013_grsalesothr_changepercent', '2013_cstbasisecur_changepercent', '2013_cstbasisothr_changepercent', '2013_gnlsecur_changepercent', '2013_gnlsothr_changepercent', '2013_netgnls_changepercent', '2013_grsincfndrsng_changepercent', '2013_lessdirfndrsng_changepercent', '2013_netincfndrsng_changepercent', '2013_grsincgaming_changepercent', '2013_lessdirgaming_changepercent', '2013_netincgaming_changepercent', '2013_grsalesinvent_changepercent', '2013_lesscstofgoods_changepercent', '2013_netincsales_changepercent', '2013_miscrevtot11e_changepercent', '2013_totrevenue_changepercent', '2013_compnsatncurrofcr_changepercent', '2013_othrsalwages_changepercent', '2013_payrolltx_changepercent', '2013_profndraising_changepercent', '2013_totfuncexpns_changepercent', '2013_totassetsend_changepercent', '2013_secrdmrtgsend_changepercent', '2013_txexmptbndsend_changepercent', '2013_unsecurednotesend_changepercent', '2013_totliabend_changepercent', '2013_retainedearnend_changepercent', '2013_totnetassetend_changepercent', '2013_gftgrntsrcvd170_changepercent', '2013_txrevnuelevied170_changepercent', '2013_grsinc170_changepercent', '2013_grsrcptsadmissn509_changepercent', '2013_subtotsuppinc509_changepercent', '2013_totsupp509_changepercent', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2012', 'GDP2013', 'GDP2014', '2013_noemplyeesw3cnt', '2012_totassetsend', '2013_totassetsend', '2012_totgftgrntrcvd509', '2013_totgftgrntrcvd509', '2014_totgftgrntrcvd509', '2012_totfuncexpns', '2013_totfuncexpns',  '2012_compnsatncurrofcr', '2013_compnsatncurrofcr', '2012_lessdirfndrsng', '2013_lessdirfndrsng', '2013_officexpns', '2013_interestamt']
     scale_columns = ['2013_rev_change', '2012_grsincmembers', '2013_grsincmembers', '2012_assets_sale_perofrev', '2012_inventory_sale_perofrev', '2012_investments_perofrev', '2012_fundraising_perofrev', '2012_programs_perofrev', '2012_rental_perofrev', '2013_assets_sale_perofrev', '2013_inventory_sale_perofrev', '2013_investments_perofrev', '2013_fundraising_perofrev', '2013_programs_perofrev', '2013_rental_perofrev', '2012_debtassetratio', '2013_debtassetratio', '2012_supportrevratio', '2013_supportrevratio', '2013_initiationfees_changepercent', '2013_grsrcptspublicuse_changepercent', '2013_grsincmembers_changepercent', '2013_grsincother_changepercent', '2013_totcntrbgfts_changepercent', '2013_totprgmrevnue_changepercent', '2013_invstmntinc_changepercent', '2013_txexmptbndsproceeds_changepercent', '2013_royaltsinc_changepercent', '2013_grsrntsreal_changepercent', '2013_grsrntsprsnl_changepercent', '2013_rntlexpnsreal_changepercent', '2013_rntlexpnsprsnl_changepercent',  '2013_rntlincreal_changepercent', '2013_rntlincprsnl_changepercent',  '2013_netrntlinc_changepercent', '2013_grsalesecur_changepercent', '2013_grsalesothr_changepercent', '2013_cstbasisecur_changepercent', '2013_cstbasisothr_changepercent', '2013_gnlsecur_changepercent', '2013_gnlsothr_changepercent', '2013_netgnls_changepercent', '2013_grsincfndrsng_changepercent', '2013_lessdirfndrsng_changepercent', '2013_netincfndrsng_changepercent', '2013_grsincgaming_changepercent', '2013_lessdirgaming_changepercent', '2013_netincgaming_changepercent', '2013_grsalesinvent_changepercent', '2013_lesscstofgoods_changepercent', '2013_netincsales_changepercent', '2013_miscrevtot11e_changepercent', '2013_totrevenue_changepercent', '2013_compnsatncurrofcr_changepercent', '2013_othrsalwages_changepercent', '2013_payrolltx_changepercent', '2013_profndraising_changepercent', '2013_totfuncexpns_changepercent', '2013_totassetsend_changepercent', '2013_txexmptbndsend_changepercent', '2013_secrdmrtgsend_changepercent', '2013_unsecurednotesend_changepercent', '2013_totliabend_changepercent', '2013_retainedearnend_changepercent', '2013_totnetassetend_changepercent', '2013_gftgrntsrcvd170_changepercent', '2013_txrevnuelevied170_changepercent', '2013_srvcsval170_changepercent', '2013_grsinc170_changepercent', '2013_grsrcptsrelated170_changepercent', '2013_totgftgrntrcvd509_changepercent', '2013_grsrcptsadmissn509_changepercent', '2013_txrevnuelevied509_changepercent', '2013_srvcsval509_changepercent', '2013_subtotsuppinc509_changepercent', '2013_totsupp509_changepercent', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2012', 'GDP2013', 'GDP2014', '2013_noemplyeesw3cnt', '2012_grsrcptspublicuse', '2013_grsrcptspublicuse', '2012_totassetsend', '2013_totassetsend', '2012_totgftgrntrcvd509', '2013_totgftgrntrcvd509', '2014_totgftgrntrcvd509', '2012_totfuncexpns', '2013_totfuncexpns',  '2012_compnsatncurrofcr', '2013_compnsatncurrofcr', '2012_lessdirfndrsng', '2013_lessdirfndrsng', '2013_officexpns', '2013_interestamt']
+    '''
     X_variables = X_columns = ['2013_YOY_revenue_fell','2013_rev_change', '2013_payroll_change', '2013_totnetassetend_change', '2012_grsincmembers', '2013_grsincmembers', '2012_assets_sale_perofrev', '2012_assets_sale_perofrev_isnegative', '2012_inventory_sale_perofrev', '2012_inventory_sale_perofrev_isnegative', '2012_investments_perofrev', '2012_investments_perofrev_isnegative', '2012_fundraising_perofrev', '2012_fundraising_perofrev_isnegative', '2012_programs_perofrev', '2012_programs_perofrev_isnegative', '2012_rental_perofrev', '2012_rental_perofrev_isnegative', '2013_assets_sale_perofrev', '2013_assets_sale_perofrev_isnegative', '2013_inventory_sale_perofrev', '2013_inventory_sale_perofrev_isnegative', '2013_investments_perofrev', '2013_investments_perofrev_isnegative', '2013_fundraising_perofrev', '2013_fundraising_perofrev_isnegative', '2013_programs_perofrev', '2013_programs_perofrev_isnegative', '2013_rental_perofrev', '2013_rental_perofrev_isnegative', '2012_fundraisingROI', '2013_fundraisingROI', '2012_debtassetratio', '2013_debtassetratio', '2012_supportrevratio', '2013_supportrevratio', '2012__persupp_govtaxes', '2012__persupp_govservices', '2013__persupp_govtaxes', '2013__persupp_govservices', '2013_initiationfees_changepercent', '2013_grsrcptspublicuse_changepercent', '2013_grsincmembers_changepercent', '2013_grsincother_changepercent', '2013_totcntrbgfts_changepercent', '2013_totprgmrevnue_changepercent', '2013_invstmntinc_changepercent', '2013_txexmptbndsproceeds_changepercent', '2013_royaltsinc_changepercent', '2013_grsrntsreal_changepercent', '2013_grsrntsprsnl_changepercent', '2013_rntlexpnsreal_changepercent', '2013_rntlexpnsprsnl_changepercent', '2013_rntlincreal_changepercent', '2013_rntlincprsnl_changepercent', '2013_netrntlinc_changepercent', '2013_grsalesecur_changepercent', '2013_grsalesothr_changepercent', '2013_cstbasisecur_changepercent', '2013_cstbasisothr_changepercent', '2013_gnlsecur_changepercent', '2013_gnlsothr_changepercent', '2013_netgnls_changepercent', '2013_grsincfndrsng_changepercent', '2013_lessdirfndrsng_changepercent', '2013_netincfndrsng_changepercent', '2013_grsincgaming_changepercent', '2013_lessdirgaming_changepercent', '2013_netincgaming_changepercent', '2013_grsalesinvent_changepercent', '2013_lesscstofgoods_changepercent', '2013_netincsales_changepercent', '2013_miscrevtot11e_changepercent', '2013_totrevenue_changepercent', '2013_compnsatncurrofcr_changepercent', '2013_othrsalwages_changepercent', '2013_payrolltx_changepercent', '2013_profndraising_changepercent', '2013_totfuncexpns_changepercent', '2013_totassetsend_changepercent', '2013_txexmptbndsend_changepercent', '2013_secrdmrtgsend_changepercent', '2013_unsecurednotesend_changepercent', '2013_totliabend_changepercent', '2013_retainedearnend_changepercent', '2013_totnetassetend_changepercent', '2013_gftgrntsrcvd170_changepercent', '2013_txrevnuelevied170_changepercent', '2013_srvcsval170_changepercent', '2013_grsinc170_changepercent', '2013_grsrcptsrelated170_changepercent', '2013_totgftgrntrcvd509_changepercent', '2013_grsrcptsadmissn509_changepercent', '2013_txrevnuelevied509_changepercent', '2013_srvcsval509_changepercent', '2013_subtotsuppinc509_changepercent', '2013_totsupp509_changepercent', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2005', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2012', 'GDP2013', '2012_missing', '2013_missing', '2013_noemplyeesw3cnt', '2012_grsrcptspublicuse', '2013_grsrcptspublicuse', '2012_totassetsend', '2013_totassetsend', '2012_totgftgrntrcvd509', '2013_totgftgrntrcvd509', '2012_totfuncexpns', '2013_totfuncexpns', '2012_compnsatncurrofcr', '2013_compnsatncurrofcr', '2012_lessdirfndrsng', '2013_lessdirfndrsng', '2013_officexpns', '2013_interestamt']
-        
-    return (y_variable, imp_cols, models_to_run, robustscale_cols, 
-        scale_columns, X_variables)
+    '''
+    return (y_variable, imp_cols, models_to_run, robustscale_cols, scale_columns)
 
 def define_clfs_params():
     '''
@@ -115,7 +115,7 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
             if col in X_variables: 
                 X_train, maxval, minval = acg_process.normalize_scale(X_train, col = col, keep = True)
                 X_test = acg_process.normalize_scale(X_test, col = col, maxval = maxval, minval = minval)
-        print('Training model...')
+        print('Finished transfroming. The final training set has the shape',X_train.shape)
         for index, clf in enumerate([clfs[x] for x in models_to_run]):
             print(models_to_run[index])
             # Iterate through all possible parameter combinations
@@ -254,14 +254,18 @@ def main(filename):
     dataframe = acg_read.load_file(filename, index = 0)
     # Get all the necessary parameters
     clfs, params = define_clfs_params()
-    y_variable, imp_cols, models_to_run, robustscale_cols, scale_columns, \
-     X_variables = define_project_params()
+    y_variable, imp_cols, models_to_run, robustscale_cols, scale_columns = define_project_params()
+    X_variables = X_columns=[i for i in dataframe.columns if not i==y_variable]
     # Remove any infinities, replace with missing
-    dataframe.replace([np.inf, -np.inf], np.nan)
+    dataframe=dataframe.replace([np.inf, -np.inf], np.nan)
     # Find any columns with missing values, set to impute
     for x in X_variables: 
         if len(dataframe[dataframe[x].isnull()]) > 0:
             imp_cols.append(x)
+    '''
+     X_drop = ['2013_payroll_change', '2013_totnetassetend_change', '2012_fundraisingROI', '2013_fundraisingROI', '2012__persupp_govtaxes', '2012__persupp_govservices', '2013__persupp_govtaxes']
+    '''
+    dataframe = dataframe[dataframe[y_variable].notnull()]
     # If a column has more than 40% missing, don't use
     X_drop = []
     for x in X_variables: 
@@ -271,10 +275,9 @@ def main(filename):
         X_variables.remove(x)
         imp_cols.remove(x)
     # Drop row if missing y-variable
-    dataframe = dataframe[dataframe[y_variable].notnull()]
     # Run the loop
     clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
-        imp_cols = imp_cols, scale_columns = scale_columns)
+        imp_cols = imp_cols, robustscale_cols=robustscale_cols, scale_columns = scale_columns)
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
