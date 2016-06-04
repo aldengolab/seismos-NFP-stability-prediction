@@ -68,16 +68,16 @@ def define_clfs_params():
         'KNN': KNeighborsClassifier(n_neighbors = 3)
         }
     params = {
-        'RF':{'n_estimators': [1,10,100,1000], 'max_depth': [10, 15,20,30,40,50,60,70,100], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': 1},
-        'LR': {'penalty': ['l1','l2'], 'C': [0.00001,0.0001,0.001,0.01,0.1,1,10],'random_state': 1},
-        'SGD': {'loss': ['log','perceptron'], 'penalty': ['l2','l1','elasticnet'], 'random_state': 1},
-        'ET': {'n_estimators': [1,10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,3,5,10,15], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': 1},
-        'AB': {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [1,10,100,1000], 'random_state': 1},
-        'GB': {'n_estimators': [1,10,100,1000], 'learning_rate' : [0.001,0.01,0.05,0.1,0.5],'subsample' : [0.1,0.5,1.0], 'max_depth': [1,3,5,10,20,50,100], 'random_state': 1},
+        'RF':{'n_estimators': [1,10,100,1000], 'max_depth': [10, 15,20,30,40,50,60,70,100], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': [1]},
+        'LR': {'penalty': ['l1','l2'], 'C': [0.00001,0.0001,0.001,0.01,0.1,1,10],'random_state': [1]},
+        'SGD': {'loss': ['log','perceptron'], 'penalty': ['l2','l1','elasticnet'], 'random_state': [1]},
+        'ET': {'n_estimators': [1,10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,3,5,10,15], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': [1]},
+        'AB': {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [1,10,100,1000], 'random_state': [1]},
+        'GB': {'n_estimators': [1,10,100,1000], 'learning_rate' : [0.001,0.01,0.05,0.1,0.5],'subsample' : [0.1,0.5,1.0], 'max_depth': [1,3,5,10,20,50,100], 'random_state': [1]},
         'NB' : {},
-        'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [15,20,30,40,50], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': 1},
-        'SVM' :{'C' :[0.00001,0.0001,0.001,0.01,0.1,1,10],'kernel':['linear'], 'random_state': 1},
-        'KNN' :{'n_neighbors': [1,5,10,25,50,100],'weights': ['uniform','distance'],'algorithm': ['auto','ball_tree','kd_tree'], 'random_state': 1}
+        'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [15,20,30,40,50], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'random_state': [1]},
+        'SVM' :{'C' :[0.00001,0.0001,0.001,0.01,0.1,1,10],'kernel':['linear'], 'random_state': [1]},
+        'KNN' :{'n_neighbors': [1,5,10,25,50,100],'weights': ['uniform','distance'],'algorithm': ['auto','ball_tree','kd_tree'], 'random_state': [1]}
         }
 
     return clfs, params
