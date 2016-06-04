@@ -67,12 +67,17 @@ def generate_features(data, year1, year2, year3=None):
         features = generate_ratio(data, features, '_totsupp509', '_totrevenue', '_supportrevratio', year3)
         features = generate_gov_support(data, features, year3)
         features = generate_YOY_changepercent(data, features, year2, year3)
-        features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year3])
-
-    features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
-    features = generate_GDP(data, features)
-    features = generate_missing_for_year(data, features)
-    features = generate_NTEE_dummies(data, features)
+  
+    if year3:
+    	features = generate_GDP(data, features,list(range(2002,year3+1)))
+    	features = generate_missing_for_year(data, features,[year1,year2,year3])
+    	features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1,year2,year3])
+    else:
+    	features = generate_GDP(data, features,list(range(2002,year2+1)))
+    	features = generate_missing_for_year(data, features,[year1,year2])
+    	features = copy_features(data, features, ['noemplyeesw3cnt','grsrcptspublicuse','grsincmembers', 'totassetsend',  'totgftgrntrcvd509', 'totfuncexpns', 'compnsatncurrofcr','totfuncexpns', 'lessdirfndrsng', 'officexpns', 'interestamt'], [year1, year2])
+	
+	features = generate_NTEE_dummies(data, features)
 
     return features
 
@@ -181,19 +186,17 @@ def generate_rev_fall(data, features, year1, year2, threshold = -0.2):
     # Returns features dataframe with new column
     return features.join(calc[column_name])
 
-def generate_missing_for_year(data, features):
+def generate_missing_for_year(data, features, years):
     '''
     Generates a 0/1 variable for an EIN if tot_revenue is missing from one
     year but present in others.
     '''
     cols = []
-    for x in data.columns:
-        if '_totrevenue' in x:
-            cols.append(x)
+    for year in years:
+        cols.append(str(year) + '_totrevenue')
     for col in cols:
-        new = pd.notnull(data[col])
-        features[col[:4] + '_missing'] = new
-
+    	new = pd.notnull(data[col])
+    	features[col[:4] + '_missing'] = new
     return features
 
 def generate_NTEE_dummies(data, features):
@@ -209,16 +212,19 @@ def generate_NTEE_dummies(data, features):
     rv = pd.get_dummies(calc['NTEE_CD'])
     return features.join(rv)
 
-def generate_GDP(data, features):
+def generate_GDP(data, features, years):
     '''
     Transfers the GDP column from data to features.
     '''
     cols = []
-    for col in data.columns:
-        if 'GDP' in col:
-            cols.append(col)
+    for year in years:
+        cols.append('GDP'+str(year))
     for col in cols:
-        features[col] = data[col]
+        try:
+            features[col] = data[col]
+            print col, ' successfully copied to features'
+        except:
+            print col ," was not copied. Check to see if  exists for given year"
     return features
 
 def generate_YOY_change_payroll_taxes(data, features, year1, year2):
