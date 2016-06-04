@@ -41,7 +41,7 @@ def define_project_params():
     '''
     Parameters specific to the project being run.
     '''
-    models_to_run = ['DT', 'RF']
+    models_to_run = ['RF']
     y_variable = '2014_YOY_revenue_fell'
     imp_cols = []
     robustscale_cols = ['2013_rev_change', '2012_grsincmembers', '2013_grsincmembers', '2012_inventory_sale_perofrev', '2012_investments_perofrev', '2012_programs_perofrev', '2013_inventory_sale_perofrev', '2013_investments_perofrev', '2013_programs_perofrev', '2013_inventory_sale_perofrev', '2013_investments_perofrev', '2013_programs_perofrev', '2013_rental_perofrev', '2012_debtassetratio', '2013_debtassetratio', '2012_supportrevratio', '2013_supportrevratio', '2013_initiationfees_changepercent', '2013_grsrcptspublicuse_changepercent', '2013_grsincmembers_changepercent', '2013_grsincother_changepercent', '2013_totcntrbgfts_changepercent', '2013_totprgmrevnue_changepercent', '2013_invstmntinc_changepercent', '2013_txexmptbndsproceeds_changepercent', '2013_royaltsinc_changepercent', '2013_grsrntsreal_changepercent', '2013_grsrntsprsnl_changepercent', '2013_rntlexpnsreal_changepercent', '2013_rntlexpnsprsnl_changepercent', '2013_rntlincreal_changepercent', '2013_rntlincprsnl_changepercent', '2013_netrntlinc_changepercent', '2013_grsalesecur_changepercent', '2013_grsalesothr_changepercent', '2013_cstbasisecur_changepercent', '2013_cstbasisothr_changepercent', '2013_gnlsecur_changepercent', '2013_gnlsothr_changepercent', '2013_netgnls_changepercent', '2013_grsincfndrsng_changepercent', '2013_lessdirfndrsng_changepercent', '2013_netincfndrsng_changepercent', '2013_grsincgaming_changepercent', '2013_lessdirgaming_changepercent', '2013_netincgaming_changepercent', '2013_grsalesinvent_changepercent', '2013_lesscstofgoods_changepercent', '2013_netincsales_changepercent', '2013_miscrevtot11e_changepercent', '2013_totrevenue_changepercent', '2013_compnsatncurrofcr_changepercent', '2013_othrsalwages_changepercent', '2013_payrolltx_changepercent', '2013_profndraising_changepercent', '2013_totfuncexpns_changepercent', '2013_totassetsend_changepercent', '2013_secrdmrtgsend_changepercent', '2013_txexmptbndsend_changepercent', '2013_unsecurednotesend_changepercent', '2013_totliabend_changepercent', '2013_retainedearnend_changepercent', '2013_totnetassetend_changepercent', '2013_gftgrntsrcvd170_changepercent', '2013_txrevnuelevied170_changepercent', '2013_grsinc170_changepercent', '2013_grsrcptsadmissn509_changepercent', '2013_subtotsuppinc509_changepercent', '2013_totsupp509_changepercent', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2012', 'GDP2013', 'GDP2014', '2013_noemplyeesw3cnt', '2012_totassetsend', '2013_totassetsend', '2012_totgftgrntrcvd509', '2013_totgftgrntrcvd509', '2014_totgftgrntrcvd509', '2012_totfuncexpns', '2013_totfuncexpns',  '2012_compnsatncurrofcr', '2013_compnsatncurrofcr', '2012_lessdirfndrsng', '2013_lessdirfndrsng', '2013_officexpns', '2013_interestamt']
@@ -68,14 +68,14 @@ def define_clfs_params():
         'KNN': KNeighborsClassifier(n_neighbors = 3) 
         }
     params = { 
-        'RF':{'n_estimators': [1,10,100,1000], 'max_depth': [1,3,5,10,15,20,30,40,50], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
+        'RF':{'n_estimators': [1,10,100,1000], 'max_depth': [10, 15,20,30,40,50,60,70,100], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
         'LR': {'penalty': ['l1','l2'], 'C': [0.00001,0.0001,0.001,0.01,0.1,1,10]},
         'SGD': {'loss': ['log','perceptron'], 'penalty': ['l2','l1','elasticnet']},
         'ET': {'n_estimators': [1,10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,3,5,10,15], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
         'AB': {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [1,10,100,1000]},
         'GB': {'n_estimators': [1,10,100,1000], 'learning_rate' : [0.001,0.01,0.05,0.1,0.5],'subsample' : [0.1,0.5,1.0], 'max_depth': [1,3,5,10,20,50,100]},
         'NB' : {},
-        'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [1,3,5,10,15,20,30,40,50], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
+        'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [15,20,30,40,50], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10]},
         'SVM' :{'C' :[0.00001,0.0001,0.001,0.01,0.1,1,10],'kernel':['linear']},
         'KNN' :{'n_neighbors': [1,5,10,25,50,100],'weights': ['uniform','distance'],'algorithm': ['auto','ball_tree','kd_tree']}
         }
