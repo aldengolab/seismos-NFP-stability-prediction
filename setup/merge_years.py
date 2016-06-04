@@ -37,6 +37,7 @@ mergecols14 = ["2014_" + col for col in cols14 if col != "EIN"]
 mergecols14.insert(0,"EIN")
 df2014.columns = mergecols14
 
+df2015 = df2015[['EIN', 'totrevenue']]
 cols15 = df2015.columns
 cols15 = list(cols15)
 mergecols15 = ["2015_" + col for col in cols15 if col != "EIN"]
