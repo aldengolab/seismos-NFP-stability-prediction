@@ -41,7 +41,7 @@ def define_project_params():
     '''
     Parameters specific to the project being run.
     '''
-    models_to_run = ['DT', 'RF', 'SGD', 'LR', 'AB']
+    models_to_run = ['DT', 'RF']
     y_variable = '2014_YOY_revenue_fell'
     imp_cols = []
     robustscale_cols = ['2013_rev_change', '2012_grsincmembers', '2013_grsincmembers', '2012_inventory_sale_perofrev', '2012_investments_perofrev', '2012_programs_perofrev', '2013_inventory_sale_perofrev', '2013_investments_perofrev', '2013_programs_perofrev', '2013_inventory_sale_perofrev', '2013_investments_perofrev', '2013_programs_perofrev', '2013_rental_perofrev', '2012_debtassetratio', '2013_debtassetratio', '2012_supportrevratio', '2013_supportrevratio', '2013_initiationfees_changepercent', '2013_grsrcptspublicuse_changepercent', '2013_grsincmembers_changepercent', '2013_grsincother_changepercent', '2013_totcntrbgfts_changepercent', '2013_totprgmrevnue_changepercent', '2013_invstmntinc_changepercent', '2013_txexmptbndsproceeds_changepercent', '2013_royaltsinc_changepercent', '2013_grsrntsreal_changepercent', '2013_grsrntsprsnl_changepercent', '2013_rntlexpnsreal_changepercent', '2013_rntlexpnsprsnl_changepercent', '2013_rntlincreal_changepercent', '2013_rntlincprsnl_changepercent', '2013_netrntlinc_changepercent', '2013_grsalesecur_changepercent', '2013_grsalesothr_changepercent', '2013_cstbasisecur_changepercent', '2013_cstbasisothr_changepercent', '2013_gnlsecur_changepercent', '2013_gnlsothr_changepercent', '2013_netgnls_changepercent', '2013_grsincfndrsng_changepercent', '2013_lessdirfndrsng_changepercent', '2013_netincfndrsng_changepercent', '2013_grsincgaming_changepercent', '2013_lessdirgaming_changepercent', '2013_netincgaming_changepercent', '2013_grsalesinvent_changepercent', '2013_lesscstofgoods_changepercent', '2013_netincsales_changepercent', '2013_miscrevtot11e_changepercent', '2013_totrevenue_changepercent', '2013_compnsatncurrofcr_changepercent', '2013_othrsalwages_changepercent', '2013_payrolltx_changepercent', '2013_profndraising_changepercent', '2013_totfuncexpns_changepercent', '2013_totassetsend_changepercent', '2013_secrdmrtgsend_changepercent', '2013_txexmptbndsend_changepercent', '2013_unsecurednotesend_changepercent', '2013_totliabend_changepercent', '2013_retainedearnend_changepercent', '2013_totnetassetend_changepercent', '2013_gftgrntsrcvd170_changepercent', '2013_txrevnuelevied170_changepercent', '2013_grsinc170_changepercent', '2013_grsrcptsadmissn509_changepercent', '2013_subtotsuppinc509_changepercent', '2013_totsupp509_changepercent', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2012', 'GDP2013', 'GDP2014', '2013_noemplyeesw3cnt', '2012_totassetsend', '2013_totassetsend', '2012_totgftgrntrcvd509', '2013_totgftgrntrcvd509', '2014_totgftgrntrcvd509', '2012_totfuncexpns', '2013_totfuncexpns',  '2012_compnsatncurrofcr', '2013_compnsatncurrofcr', '2012_lessdirfndrsng', '2013_lessdirfndrsng', '2013_officexpns', '2013_interestamt']
@@ -83,7 +83,7 @@ def define_clfs_params():
     return clfs, params
 
 def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables, 
- imp_cols = [], addl_runs = 4, evalution = ['AUC', 'precision', 'recall'], stat_k = .10, plot = False, 
+ imp_cols = [], addl_runs = 9, evalution = ['AUC', 'precision', 'recall'], stat_k = .10, plot = False, 
  robustscale_cols = [], scale_columns = [], params_iter_max = 50, randomize_features = .5):
     '''
     Runs through each model specified by models_to_run once with each possible
