@@ -78,7 +78,7 @@ def define_clfs_params():
         'KNN': KNeighborsClassifier(n_neighbors = 3)
         }
     params = {
-        'RF': {'n_estimators': [], 'max_depth': [], 'max_features': [],'min_samples_split': [], 'random_state': []},
+        'RF': 'RF':{'n_estimators': [10], 'max_depth': [10], 'max_features': ['sqrt'],'min_samples_split': [5], 'random_state': [1]},
         'LR': {'penalty': [], 'C': [],'random_state': []},
         'SGD': {'loss': [], 'penalty': [], 'random_state': []},
         'ET': {'n_estimators': [], 'criterion' : [] ,'max_depth': [], 'max_features': [],'min_samples_split': [], 'random_state': []},
@@ -316,6 +316,6 @@ def main(filename, start_year):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        main(sys.argv[1], sys.argv[2], sys.argv[3])
+        main(sys.argv[1], sys.argv[2])
     else:
         print('Usage: -u model.py <featuresfilename> <start year>')
