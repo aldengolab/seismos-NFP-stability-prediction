@@ -159,10 +159,10 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                             if result[0] > maximum[1]:
                                 maximum = (clf, result[0], result[1])
                                 print('Max Precision: {}'.format(maximum))
-                                plot_precision_recall_n(y_test, y_pred_probs, clf, N)
                                 path = 'maxPrecisionModel{}.pkl'.format(N)
                                 joblib.dump(clf, 'path')
                                 print('Pickled in jar {}'.format(path))
+                                plot_precision_recall_n(y_test, y_pred_probs, clf, N)
                                 N += 1
                                 if models_to_run[index] == 'RF':
                                     importances = clf.feature_importances_
