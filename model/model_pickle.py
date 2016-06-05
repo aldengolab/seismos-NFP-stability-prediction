@@ -19,6 +19,9 @@ the Precision, it will pickle a model. Final pickle is the best performing model
 from __future__ import division
 import sys
 import acg_read
+import matplotlib
+matplotlib.use('Qt4Agg')
+import matplotlib.cm as cm
 import copy
 import pandas as pd
 import numpy as np
@@ -36,12 +39,14 @@ from sklearn.metrics import *
 from sklearn.preprocessing import StandardScaler
 import random
 import pylab as pl
+import matplotlib.pyplot as plt
 from scipy import optimize
 import time
 import acg_process
 import random
 from sklearn.externals import joblib
 import re
+import os
 
 # Our data is processed using year labels, however these need to be 
 # generalized for the model preservation and use
@@ -156,10 +161,17 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                             print('Precision: ', result)
                             if result[0] > maximum[1]:
                                 maximum = (clf, result[0], result[1])
-                                print('Max Precision: {}'.format(maximum))
+                                print('Max Precision!')
+                                # Delete previous pickle
+                                filelist = [f for f in os.listdir(".") if f.endswith(".npy") ]
+                                for f in filelist:
+                                    os.remove(f)
+                                # Preserve new pickle
                                 path = 'maxPrecisionModel{}.pkl'.format(N)
                                 joblib.dump(clf, path)
                                 print('Pickled in jar {}'.format(path))
+                                # Plot precision recall curve
+                                plot_precision_recall_n(y_test, y_pred_probs, clf, N)
                                 N += 1
                                 if models_to_run[index] == 'RF':
                                     importances = clf.feature_importances_
@@ -171,6 +183,9 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                         if 'AUC' in evalution:
                             result = auc_roc(y_test, y_pred_probs)
                             print('AUC: {}'.format(result))
+                        if plot and result[0] <= maximum[1]:
+                            plot_precision_recall_n(y_test, y_pred_probs, clf, N)
+                            N += 1
                         if 'recall' in evalution:
                             print('Recall: ', recall_at_k(y_test, y_pred_probs, stat_k))
                         print('Accuracy: ', accuracy_at_k(y_test, y_pred_probs, stat_k))
@@ -184,6 +199,44 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                     except AttributeError as e:
                         print('AttributeError: {}'.format(e))
                         continue
+
+
+def plot_precision_recall_n(y_true, y_prob, model_name, N):
+    '''
+    Plots the precision recall curve.
+    '''
+    from sklearn.metrics import precision_recall_curve
+
+    y_score = y_prob
+    precision_curve, recall_curve, pr_thresholds = precision_recall_curve(
+        y_true, y_score)
+    precision_curve = precision_curve[:-1]
+    recall_curve = recall_curve[:-1]
+    pct_above_per_thresh = []
+    number_scored = len(y_score)
+
+    for value in pr_thresholds:
+        num_above_thresh = len(y_score[y_score>=value])
+        pct_above_thresh = num_above_thresh / float(number_scored)
+        pct_above_per_thresh.append(pct_above_thresh)
+    pct_above_per_thresh = np.array(pct_above_per_thresh)
+
+    plt.clf()
+    fig, ax1 = plt.subplots()
+    ax1.plot(pct_above_per_thresh, precision_curve, 'b')
+    ax1.set_xlabel('percent of population')
+    ax1.set_ylabel('precision', color='b')
+    ax2 = ax1.twinx()
+    ax2.plot(pct_above_per_thresh, recall_curve, 'r')
+    ax2.set_ylabel('recall', color='r')
+
+    model = str(model_name)[:20]
+    name = '{}_{}.png'.format(model, N)
+    print('File saved as {} for model above'.format(name))
+    plt.title(name)
+    plt.savefig(name)
+    #plt.show()
+    plt.close()
 
 def accuracy_at_k(y_true, y_scores, k = None):
     '''
