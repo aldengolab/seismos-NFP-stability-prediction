@@ -78,7 +78,7 @@ def define_clfs_params():
         'KNN': KNeighborsClassifier(n_neighbors = 3)
         }
     params = {
-        'RF': 'RF':{'n_estimators': [10], 'max_depth': [10], 'max_features': ['sqrt'],'min_samples_split': [5], 'random_state': [1]},
+        'RF': {'n_estimators': [10], 'max_depth': [10], 'max_features': ['sqrt'], 'min_samples_split': [5], 'random_state': [1]},
         'LR': {'penalty': [], 'C': [],'random_state': []},
         'SGD': {'loss': [], 'penalty': [], 'random_state': []},
         'ET': {'n_estimators': [], 'criterion' : [] ,'max_depth': [], 'max_features': [],'min_samples_split': [], 'random_state': []},
