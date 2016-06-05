@@ -8,11 +8,7 @@
 '''
 HOW TO USE THIS FILE: 
 
-Take the successful model & parameters from acg_model.py run and put them in 
-define_clfs_params; use models_to_run to specify which modeling technique. 
-
-This file will iterate through 20 runs of the data with different 90/10 splits
-in order to get best precision model.
+Specify a pickled classification model and run against validation year.
 '''
 
 from __future__ import division
@@ -43,152 +39,40 @@ import acg_process
 import random
 from sklearn.externals import joblib
 
-# Our data is processed using year labels, however these need to be 
-# generalized for the model preservation and use
-
-TEST_LABELS = {'2004':'10YP', '2009': '5YP', '2011': '3YP', '2012': '2YP', '2013': '1YP', '2014': 'Y00'}
+VERIFICATION_LABELS = {'2005':'10YP', '2010': '5YP', '2012': '3YP', '2013': '2YP', '2014': '1YP', '2015': 'Y00'}
 
 def define_project_params():
     '''
     Parameters specific to the project being run.
     '''
-    models_to_run = ['NB','DT','SGD','KNN'] # Use this to specify the model type
     y_variable = 'Y00_YOY_revenue_fell'
     imp_cols = []
     robustscale_cols = ['1YP_rev_change', '2YP_grsincmembers', '1YP_grsincmembers', '2YP_inventory_sale_perofrev', '2YP_investments_perofrev', '2YP_programs_perofrev', '1YP_inventory_sale_perofrev', '1YP_investments_perofrev', '1YP_programs_perofrev', '1YP_inventory_sale_perofrev', '1YP_investments_perofrev', '1YP_programs_perofrev', '1YP_rental_perofrev', '2YP_debtassetratio', '1YP_debtassetratio', '2YP_supportrevratio', '1YP_supportrevratio', '1YP_initiationfees_changepercent', '1YP_grsrcptspublicuse_changepercent', '1YP_grsincmembers_changepercent', '1YP_grsincother_changepercent', '1YP_totcntrbgfts_changepercent', '1YP_totprgmrevnue_changepercent', '1YP_invstmntinc_changepercent', '1YP_txexmptbndsproceeds_changepercent', '1YP_royaltsinc_changepercent', '1YP_grsrntsreal_changepercent', '1YP_grsrntsprsnl_changepercent', '1YP_rntlexpnsreal_changepercent', '1YP_rntlexpnsprsnl_changepercent', '1YP_rntlincreal_changepercent', '1YP_rntlincprsnl_changepercent', '1YP_netrntlinc_changepercent', '1YP_grsalesecur_changepercent', '1YP_grsalesothr_changepercent', '1YP_cstbasisecur_changepercent', '1YP_cstbasisothr_changepercent', '1YP_gnlsecur_changepercent', '1YP_gnlsothr_changepercent', '1YP_netgnls_changepercent', '1YP_grsincfndrsng_changepercent', '1YP_lessdirfndrsng_changepercent', '1YP_netincfndrsng_changepercent', '1YP_grsincgaming_changepercent', '1YP_lessdirgaming_changepercent', '1YP_netincgaming_changepercent', '1YP_grsalesinvent_changepercent', '1YP_lesscstofgoods_changepercent', '1YP_netincsales_changepercent', '1YP_miscrevtot11e_changepercent', '1YP_totrevenue_changepercent', '1YP_compnsatncurrofcr_changepercent', '1YP_othrsalwages_changepercent', '1YP_payrolltx_changepercent', '1YP_profndraising_changepercent', '1YP_totfuncexpns_changepercent', '1YP_totassetsend_changepercent', '1YP_secrdmrtgsend_changepercent', '1YP_txexmptbndsend_changepercent', '1YP_unsecurednotesend_changepercent', '1YP_totliabend_changepercent', '1YP_retainedearnend_changepercent', '1YP_totnetassetend_changepercent', '1YP_gftgrntsrcvd170_changepercent', '1YP_txrevnuelevied170_changepercent', '1YP_grsinc170_changepercent', '1YP_grsrcptsadmissn509_changepercent', '1YP_subtotsuppinc509_changepercent', '1YP_totsupp509_changepercent', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2YP', 'GDP1YP', 'GDP2014', '1YP_noemplyeesw3cnt', '2YP_totassetsend', '1YP_totassetsend', '2YP_totgftgrntrcvd509', '1YP_totgftgrntrcvd509', '2014_totgftgrntrcvd509', '2YP_totfuncexpns', '1YP_totfuncexpns',  '2YP_compnsatncurrofcr', '1YP_compnsatncurrofcr', '2YP_lessdirfndrsng', '1YP_lessdirfndrsng', '1YP_officexpns', '1YP_interestamt']
     scale_columns = ['1YP_rev_change', '2YP_grsincmembers', '1YP_grsincmembers', '2YP_assets_sale_perofrev', '2YP_inventory_sale_perofrev', '2YP_investments_perofrev', '2YP_fundraising_perofrev', '2YP_programs_perofrev', '2YP_rental_perofrev', '1YP_assets_sale_perofrev', '1YP_inventory_sale_perofrev', '1YP_investments_perofrev', '1YP_fundraising_perofrev', '1YP_programs_perofrev', '1YP_rental_perofrev', '2YP_debtassetratio', '1YP_debtassetratio', '2YP_supportrevratio', '1YP_supportrevratio', '1YP_initiationfees_changepercent', '1YP_grsrcptspublicuse_changepercent', '1YP_grsincmembers_changepercent', '1YP_grsincother_changepercent', '1YP_totcntrbgfts_changepercent', '1YP_totprgmrevnue_changepercent', '1YP_invstmntinc_changepercent', '1YP_txexmptbndsproceeds_changepercent', '1YP_royaltsinc_changepercent', '1YP_grsrntsreal_changepercent', '1YP_grsrntsprsnl_changepercent', '1YP_rntlexpnsreal_changepercent', '1YP_rntlexpnsprsnl_changepercent',  '1YP_rntlincreal_changepercent', '1YP_rntlincprsnl_changepercent',  '1YP_netrntlinc_changepercent', '1YP_grsalesecur_changepercent', '1YP_grsalesothr_changepercent', '1YP_cstbasisecur_changepercent', '1YP_cstbasisothr_changepercent', '1YP_gnlsecur_changepercent', '1YP_gnlsothr_changepercent', '1YP_netgnls_changepercent', '1YP_grsincfndrsng_changepercent', '1YP_lessdirfndrsng_changepercent', '1YP_netincfndrsng_changepercent', '1YP_grsincgaming_changepercent', '1YP_lessdirgaming_changepercent', '1YP_netincgaming_changepercent', '1YP_grsalesinvent_changepercent', '1YP_lesscstofgoods_changepercent', '1YP_netincsales_changepercent', '1YP_miscrevtot11e_changepercent', '1YP_totrevenue_changepercent', '1YP_compnsatncurrofcr_changepercent', '1YP_othrsalwages_changepercent', '1YP_payrolltx_changepercent', '1YP_profndraising_changepercent', '1YP_totfuncexpns_changepercent', '1YP_totassetsend_changepercent', '1YP_txexmptbndsend_changepercent', '1YP_secrdmrtgsend_changepercent', '1YP_unsecurednotesend_changepercent', '1YP_totliabend_changepercent', '1YP_retainedearnend_changepercent', '1YP_totnetassetend_changepercent', '1YP_gftgrntsrcvd170_changepercent', '1YP_txrevnuelevied170_changepercent', '1YP_srvcsval170_changepercent', '1YP_grsinc170_changepercent', '1YP_grsrcptsrelated170_changepercent', '1YP_totgftgrntrcvd509_changepercent', '1YP_grsrcptsadmissn509_changepercent', '1YP_txrevnuelevied509_changepercent', '1YP_srvcsval509_changepercent', '1YP_subtotsuppinc509_changepercent', '1YP_totsupp509_changepercent', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2YP', 'GDP1YP', 'GDP2014', '1YP_noemplyeesw3cnt', '2YP_grsrcptspublicuse', '1YP_grsrcptspublicuse', '2YP_totassetsend', '1YP_totassetsend', '2YP_totgftgrntrcvd509', '1YP_totgftgrntrcvd509', '2014_totgftgrntrcvd509', '2YP_totfuncexpns', '1YP_totfuncexpns',  '2YP_compnsatncurrofcr', '1YP_compnsatncurrofcr', '2YP_lessdirfndrsng', '1YP_lessdirfndrsng', '1YP_officexpns', '1YP_interestamt']
 
-    return (y_variable, imp_cols, models_to_run, robustscale_cols, scale_columns)
+    return (y_variable, imp_cols, robustscale_cols, scale_columns)
 
-def define_clfs_params():
+def clf_execute(dataframe, clf, y_variable, X_variables, stat_k = 0.1, 
+     export_values = True):
     '''
-    Defines all relevant parameters and classes for classfier objects.
     '''
-    clfs = {
-        'RF': RandomForestClassifier(n_estimators = 50, n_jobs = -1),
-        'ET': ExtraTreesClassifier(n_estimators = 10, n_jobs = -1, criterion = 'entropy'),
-        'AB': AdaBoostClassifier(DecisionTreeClassifier(max_depth = [1, 5, 10, 15]), algorithm = "SAMME", n_estimators = 200),
-        'LR': LogisticRegression(penalty = 'l1', C = 1e5),
-        'SVM': svm.SVC(kernel = 'linear', probability = True, random_state = 0),
-        'GB': GradientBoostingClassifier(learning_rate = 0.05, subsample = 0.5, max_depth = 6, n_estimators = 10),
-        'NB': GaussianNB(),
-        'DT': DecisionTreeClassifier(),
-        'SGD': SGDClassifier(loss = 'log', penalty = 'l2'),
-        'KNN': KNeighborsClassifier(n_neighbors = 3)
-        }
-    params = {
-        'RF': {'n_estimators': [], 'max_depth': [], 'max_features': [],'min_samples_split': [], 'random_state': []},
-        'LR': {'penalty': [], 'C': [],'random_state': []},
-        'SGD': {'loss': [], 'penalty': [], 'random_state': []},
-        'ET': {'n_estimators': [], 'criterion' : [] ,'max_depth': [], 'max_features': [],'min_samples_split': [], 'random_state': []},
-        'AB': {'algorithm': [], 'n_estimators': [], 'random_state': []},
-        'GB': {'n_estimators': [], 'learning_rate' : [],'subsample' : [], 'max_depth': [], 'random_state': []},
-        'NB' : {},
-        'DT': {'criterion': [], 'max_depth': [], 'max_features': [],'min_samples_split': [], 'random_state': []},
-        'SVM' :{'C' :[],'kernel':[], 'random_state': []},
-        'KNN' :{'n_neighbors': [],'weights': [],'algorithm': [], 'random_state': []}
-        }
-
-    return clfs, params
-
-def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
- imp_cols = [], addl_runs = 0, evalution = ['AUC', 'precision', 'recall'], stat_k = .10, plot = False,
- robustscale_cols = [], scale_columns = [], params_iter_max = 50, randomize_features = None):
-    '''
-    Runs through each model specified by models_to_run once with each possible
-    setting in params. For boosting don't include randomize_features.
-    '''
-    N = 0
-    maximum = ('name', 0, 0)
-    for n in range(1 + addl_runs):
-        print('Sampling new test/train split...')
-        # Drop NaNs on y variable, since this is neeeded for validation
-        dataframe.dropna(subset = [y_variable], inplace = True)
-        X_train, X_test, y_train, y_test = acg_process.test_train_split(dataframe,
-            y_variable, test_size=0.1)
-        # Limit to X & Y variables that have been specified
-        if randomize_features:
-            size = len(X_variables) * randomize_features
-            rand_X = random.sample(X_variables, int(size))
-            print("New X Variables: {}".format(X_variables))
-        else:
-            rand_X = X_variables
-        X_train = X_train[rand_X]
-        X_test = X_test[rand_X]
-        y_train = y_train.astype(int)
-        y_test = y_test.astype(int)
-        print('Imputing data for new split...')
-        for col in imp_cols:
-            if col in rand_X:
-                X_train, median = acg_process.impute_median(X_train, col)
-                X_test = acg_process.impute_specific(X_test, col, median)
-        print('Finished imputing, transforming data...')
-        for col in robustscale_cols:
-            if col in rand_X:
-                X_train, scaler = acg_process.robust_transform(X_train, col, keep = True)
-                X_test = acg_process.robust_transform(X_test, col, scaler = scaler)
-        for col in scale_columns:
-            if col in rand_X:
-                X_train, maxval, minval = acg_process.normalize_scale(X_train, col = col, keep = True)
-                X_test = acg_process.normalize_scale(X_test, col = col, maxval = maxval, minval = minval)
-        print('Finished transfroming. The final training set has the shape',X_train.shape)
-        for index, clf in enumerate([clfs[x] for x in models_to_run]):
-            print(models_to_run[index])
-            sys.stderr.write('Running {}.'.format(models_to_run[index]))
-            # Iterate through all possible parameter combinations
-            parameter_values = params[models_to_run[index]]
-            grid = ParameterGrid(parameter_values)
-            iteration = 0
-            for p in grid:
-                # If cut-off of parameter iterations expected, choose random
-                if len(grid) > params_iter_max:
-                    p = random.choice(list(grid))
-                # Run until hitting max number of parameter iterations
-                if iteration < params_iter_max:
-                    try:
-                        clf.set_params(**p)
-                        print(clf)
-                        y_pred_probs = clf.fit(X_train, y_train).predict_proba(
-                            X_test)[:,1]
-                        if 'precision' in evalution:
-                            result = precision_at_k(y_test, y_pred_probs,
-                            stat_k)
-                            print('Precision: ', result)
-                            if result[0] > maximum[1]:
-                                maximum = (clf, result[0], result[1])
-                                print('Max Precision: {}'.format(maximum))
-                                plot_precision_recall_n(y_test,
-                                y_pred_probs, clf, N)
-                                path = 'maxPrecisionModel{}.pkl'.format(N)
-                                joblib.dump(clf, 'path')
-                                N += 1
-                                if models_to_run[index] == 'RF':
-                                    importances = clf.feature_importances_
-                                    sortedidx = np.argsort(importances)
-                                    best_features = X_train.columns[sortedidx]
-                                    print('Best Features: {}'.format(best_features[::-1]))
-                                if models_to_run[index] == 'DT':
-                                    export_graphviz(clf, 'DT_graph_' + str(N) + '.dot')
-                        if 'AUC' in evalution:
-                            result = auc_roc(y_test, y_pred_probs)
-                            print('AUC: {}'.format(result))
-                        if plot and result[0] <= maximum[1]:
-                            plot_precision_recall_n(y_test, y_pred_probs, clf, N)
-                            N += 1
-                        if 'recall' in evalution:
-                            print('Recall: ', recall_at_k(y_test, y_pred_probs, stat_k))
-                        print('Accuracy: ', accuracy_at_k(y_test, y_pred_probs, stat_k))
-                        iteration += 1
-                    except IndexError as e:
-                        print('Error: {0}'.format(e))
-                        continue
-                    except RuntimeError as e:
-                        print('RuntimeError: {}'.format(e))
-                        continue
-                    except AttributeError as e:
-                        print('AttributeError: {}'.format(e))
-                        continue
-
+    validation_data = dataframe[X_variables]
+    validation_set = dataframe[y_variable]
+    
+    print(clf)
+    y_pred_probs = predict_proba(validation_data)[:,1]
+    precision = precision_at_k(y_test, y_pred_probs, stat_k)
+    auc = auc_roc(y_test, y_pred_probs)
+    recall = recall_at_k(y_test, y_pred_probs, stat_k)
+    accuracy = accuracy_at_k(y_test, y_pred_probs, stat_k)
+    print('RESULT AT K = {}'.format(stat_k))
+    print('  THRESHOLD: {}'.format(precision[1]))
+    print('  PRECISION: {}'.format(precision[0])'
+    print('  AUC - ROC: {}'.format(auc[0]))
+    print('  RECALL: {}'.format(recall[0]))
+    print('  ACCURACY: {}'.format(accuracy[0]))
+    if export_values:
+        y_pred_probs.to_csv('Validation_Result.csv')
 
 def plot_precision_recall_n(y_true, y_prob, model_name, N):
     '''
@@ -272,49 +156,44 @@ def recall_at_k(y_true, y_scores, k = None):
     y_pred = np.asarray([1 if i >= threshold else 0 for i in y_scores])
     return (metrics.recall_score(y_true, y_pred), threshold)
 
-def main(filename, start_year):
+def main(filename, clf_fp, start_year):
     '''
-    Runs the loop.
+    Runs the validation.
     '''
     dataframe = acg_read.load_file(filename, index = 0)
+    clf = joblib.load(clf_fp)
+    # Generalize dataset column names
     new_col_names = []
     for x in dataframe.columns: 
         year = re.search('[2][0-9]*', x)
-        if year != None and year.group(0) in TEST_LABELS:
-            gen_year = TEST_LABELS[year.group(0)]
+        if year != None and year.group(0) in VERIFICATION_LABELS:
+            gen_year = VERIFICATION_LABELS[year.group(0)]
             new_col_names.append(x[:year.start()] + gen_year + x[year.end():])
         else:
             new_col_names.append(x)
     dataframe.columns = new_col_names
+    # Drop row if missing y-variable
+    dataframe = dataframe[dataframe[y_variable].notnull()]
     # Get all the necessary parameters
-    clfs, params = define_clfs_params()
-    y_variable, imp_cols, models_to_run, robustscale_cols, scale_columns = define_project_params()
+    y_variable, imp_cols, robustscale_cols, scale_columns = define_project_params()
     X_variables = [i for i in dataframe.columns if i != y_variable]
     # Remove any infinities, replace with missing
     dataframe = dataframe.replace([np.inf, -np.inf], np.nan)
-    # Find any columns with missing values, set to impute
+    # Find any columns with missing values and impute, transform scales
     for x in X_variables:
         if len(dataframe[dataframe[x].isnull()]) > 0:
-            imp_cols.append(x)
-    # Drop row if missing y-variable
-    dataframe = dataframe[dataframe[y_variable].notnull()]
-    # If a column has more than 40% missing, don't use
-    X_drop = []
-    for x in X_variables:
-        if len(dataframe[dataframe[x].isnull()]) / len(dataframe) > 0.4:
-            X_drop.append(x)
-    for x in X_drop:
-        if x in X_variables:
-            X_variables.remove(x)
-        if x in imp_cols:
-            imp_cols.remove(x)
-    # Run the loop
-    clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
-        imp_cols = imp_cols, scale_columns = scale_columns, 
-        robustscale_cols = robustscale_cols, addl_runs = 19)
+            dataframe = acg_process.impute_median(dataframe, x, keep = False)
+    for col in robustscale_cols:
+        if col in X_variables:
+            dataframe = acg_process.robust_transform(dataframe, col, keep = False)
+    for col in scale_columns:
+        if col in X_variables:
+            dataframe = acg_process.normalize_scale(dataframe, col = col, keep = False)
+    # Execute validation
+    clf_execute(dataframe, clf, y_variable, X_variables)
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         main(sys.argv[1], sys.argv[2], sys.argv[3])
     else:
-        print('Usage: -u model.py <featuresfilename> <start year>')
+        print('Usage: -u model.py <featuresfilename>')
