@@ -54,7 +54,7 @@ def define_project_params():
     '''
     Parameters specific to the project being run.
     '''
-    models_to_run = ['NB'] # Use this to specify the model type
+    models_to_run = ['DT'] # Use this to specify the model type
     y_variable = 'Y00_YOY_revenue_fell'
     imp_cols = []
     robustscale_cols = ['1YP_rev_change', '2YP_grsincmembers', '1YP_grsincmembers', '2YP_inventory_sale_perofrev', '2YP_investments_perofrev', '2YP_programs_perofrev', '1YP_inventory_sale_perofrev', '1YP_investments_perofrev', '1YP_programs_perofrev', '1YP_inventory_sale_perofrev', '1YP_investments_perofrev', '1YP_programs_perofrev', '1YP_rental_perofrev', '2YP_debtassetratio', '1YP_debtassetratio', '2YP_supportrevratio', '1YP_supportrevratio', '1YP_initiationfees_changepercent', '1YP_grsrcptspublicuse_changepercent', '1YP_grsincmembers_changepercent', '1YP_grsincother_changepercent', '1YP_totcntrbgfts_changepercent', '1YP_totprgmrevnue_changepercent', '1YP_invstmntinc_changepercent', '1YP_txexmptbndsproceeds_changepercent', '1YP_royaltsinc_changepercent', '1YP_grsrntsreal_changepercent', '1YP_grsrntsprsnl_changepercent', '1YP_rntlexpnsreal_changepercent', '1YP_rntlexpnsprsnl_changepercent', '1YP_rntlincreal_changepercent', '1YP_rntlincprsnl_changepercent', '1YP_netrntlinc_changepercent', '1YP_grsalesecur_changepercent', '1YP_grsalesothr_changepercent', '1YP_cstbasisecur_changepercent', '1YP_cstbasisothr_changepercent', '1YP_gnlsecur_changepercent', '1YP_gnlsothr_changepercent', '1YP_netgnls_changepercent', '1YP_grsincfndrsng_changepercent', '1YP_lessdirfndrsng_changepercent', '1YP_netincfndrsng_changepercent', '1YP_grsincgaming_changepercent', '1YP_lessdirgaming_changepercent', '1YP_netincgaming_changepercent', '1YP_grsalesinvent_changepercent', '1YP_lesscstofgoods_changepercent', '1YP_netincsales_changepercent', '1YP_miscrevtot11e_changepercent', '1YP_totrevenue_changepercent', '1YP_compnsatncurrofcr_changepercent', '1YP_othrsalwages_changepercent', '1YP_payrolltx_changepercent', '1YP_profndraising_changepercent', '1YP_totfuncexpns_changepercent', '1YP_totassetsend_changepercent', '1YP_secrdmrtgsend_changepercent', '1YP_txexmptbndsend_changepercent', '1YP_unsecurednotesend_changepercent', '1YP_totliabend_changepercent', '1YP_retainedearnend_changepercent', '1YP_totnetassetend_changepercent', '1YP_gftgrntsrcvd170_changepercent', '1YP_txrevnuelevied170_changepercent', '1YP_grsinc170_changepercent', '1YP_grsrcptsadmissn509_changepercent', '1YP_subtotsuppinc509_changepercent', '1YP_totsupp509_changepercent', 'GDP2002', 'GDP2003', 'GDP2004', 'GDP2006', 'GDP2007', 'GDP2008', 'GDP2009', 'GDP2010', 'GDP2011', 'GDP2YP', 'GDP1YP', 'GDP2014', '1YP_noemplyeesw3cnt', '2YP_totassetsend', '1YP_totassetsend', '2YP_totgftgrntrcvd509', '1YP_totgftgrntrcvd509', '2014_totgftgrntrcvd509', '2YP_totfuncexpns', '1YP_totfuncexpns',  '2YP_compnsatncurrofcr', '1YP_compnsatncurrofcr', '2YP_lessdirfndrsng', '1YP_lessdirfndrsng', '1YP_officexpns', '1YP_interestamt']
@@ -86,7 +86,7 @@ def define_clfs_params():
         'AB': {'algorithm': [], 'n_estimators': [], 'random_state': []},
         'GB': {'n_estimators': [], 'learning_rate' : [],'subsample' : [], 'max_depth': [], 'random_state': []},
         'NB' : {},
-        'DT': {'criterion': [], 'max_depth': [], 'max_features': [],'min_samples_split': [], 'random_state': []},
+        'DT': {'criterion': ['entropy'], 'max_depth': [50], 'max_features': ['log2'],'min_samples_split': [10], 'random_state': [1]},
         'SVM' :{'C' :[],'kernel':[], 'random_state': []},
         'KNN' :{'n_neighbors': [],'weights': [],'algorithm': [], 'random_state': []}
         }
@@ -133,7 +133,7 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
             if col in rand_X:
                 X_train, maxval, minval = acg_process.normalize_scale(X_train, col = col, keep = True)
                 X_test = acg_process.normalize_scale(X_test, col = col, maxval = maxval, minval = minval)
-        print('Finished transfroming. The final training set has the shape',X_train.shape)
+        print('Finished transforming. The final training set has the shape',X_train.shape)
         for index, clf in enumerate([clfs[x] for x in models_to_run]):
             print(models_to_run[index])
             sys.stderr.write('Running {}.'.format(models_to_run[index]))
@@ -159,10 +159,10 @@ def clf_loop(dataframe, clfs, models_to_run, params, y_variable, X_variables,
                             if result[0] > maximum[1]:
                                 maximum = (clf, result[0], result[1])
                                 print('Max Precision: {}'.format(maximum))
-                                plot_precision_recall_n(y_test,
-                                y_pred_probs, clf, N)
+                                plot_precision_recall_n(y_test, y_pred_probs, clf, N)
                                 path = 'maxPrecisionModel{}.pkl'.format(N)
                                 joblib.dump(clf, 'path')
+                                print('Pickled in jar {}'.format(path))
                                 N += 1
                                 if models_to_run[index] == 'RF':
                                     importances = clf.feature_importances_
