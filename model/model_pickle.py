@@ -12,7 +12,8 @@ Take the successful model & parameters from acg_model.py run and put them in
 define_clfs_params; use models_to_run to specify which modeling technique. 
 
 This file will iterate through 20 runs of the data with different 90/10 splits
-in order to get best precision model.
+in order to get best precision model with these params. Every time it improves
+the Precision, it will pickle a model. Final pickle is the best performing model.
 '''
 
 from __future__ import division

@@ -65,12 +65,12 @@ def clf_execute(dataframe, clf, y_variable, X_variables, stat_k = 0.1,
     auc = auc_roc(y_test, y_pred_probs)
     recall = recall_at_k(y_test, y_pred_probs, stat_k)
     accuracy = accuracy_at_k(y_test, y_pred_probs, stat_k)
-    print('RESULT AT K = {}'.format(stat_k))
-    print('  THRESHOLD: {}'.format(precision[1]))
-    print('  PRECISION: {}'.format(precision[0])'
-    print('  AUC - ROC: {}'.format(auc[0]))
-    print('  RECALL: {}'.format(recall[0]))
-    print('  ACCURACY: {}'.format(accuracy[0]))
+    print('RESULTS AT K = {}'.format(stat_k))
+    print('    THRESHOLD: {}'.format(precision[1]))
+    print('    PRECISION: {}'.format(precision[0])'
+    print('    AUC - ROC: {}'.format(auc[0]))
+    print('    RECALL: {}'.format(recall[0]))
+    print('    ACCURACY: {}'.format(accuracy[0]))
     if export_values:
         y_pred_probs.to_csv('Validation_Result.csv')
 
@@ -156,7 +156,7 @@ def recall_at_k(y_true, y_scores, k = None):
     y_pred = np.asarray([1 if i >= threshold else 0 for i in y_scores])
     return (metrics.recall_score(y_true, y_pred), threshold)
 
-def main(filename, clf_fp, start_year):
+def main(filename, clf_fp):
     '''
     Runs the validation.
     '''
@@ -196,4 +196,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         main(sys.argv[1], sys.argv[2], sys.argv[3])
     else:
-        print('Usage: -u model.py <featuresfilename>')
+        print('Usage: -u model.py <featuresfilename> <pickled model>')
